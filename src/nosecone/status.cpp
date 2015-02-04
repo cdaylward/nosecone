@@ -23,7 +23,7 @@
 namespace nosecone {
 
 
-int perform_status(int args, char** argv) {
+int perform_status(const std::vector<std::string>& args) {
   std::cerr << "status not yet implemented." << std::endl;
   return 0;
 }

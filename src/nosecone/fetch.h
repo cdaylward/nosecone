@@ -23,7 +23,7 @@
 namespace nosecone {
 
 
-int perform_fetch(int args, char** argv);
+int perform_fetch(const std::vector<std::string>& args);
 
 
 const Command fetch{

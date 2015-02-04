@@ -23,7 +23,7 @@
 namespace nosecone {
 
 
-int perform_run(int args, char** argv);
+int perform_run(const std::vector<std::string>& args);
 
 
 const Command run{

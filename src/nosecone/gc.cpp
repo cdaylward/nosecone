@@ -23,7 +23,7 @@
 namespace nosecone {
 
 
-int perform_gc(int args, char** argv) {
+int perform_gc(const std::vector<std::string>& args) {
   std::cerr << "gc not yet implemented." << std::endl;
   return 0;
 }

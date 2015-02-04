@@ -19,6 +19,7 @@
 
 #include <functional>
 #include <map>
+#include <vector>
 
 
 namespace nosecone {
@@ -28,7 +29,7 @@ struct Command {
   std::string name;
   std::string description;
   std::string help_text;
-  std::function<int(int args, char** argv)> entry_point;
+  std::function<int(const std::vector<std::string>&)> entry_point;
 };
 
 
@@ -39,9 +40,9 @@ struct Dispatch {
     commands[command.name] = command;
   }
 
-  int run(const std::string& command_name, int args, char** argv) {
+  int run(const std::string& command_name, const std::vector<std::string>& args) {
     const auto& command = commands[command_name];
-    return command.entry_point(args, argv);
+    return command.entry_point(args);
   }
 };
 

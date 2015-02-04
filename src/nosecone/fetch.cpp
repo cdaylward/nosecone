@@ -17,14 +17,59 @@
 
 #include <iostream>
 
+#include "appc/discovery/provider.h"
+#include "appc/discovery/strategy/local.h"
+#include "appc/discovery/strategy/meta.h"
+#include "appc/discovery/strategy/simple.h"
+
 #include "nosecone/fetch.h"
 
 
 namespace nosecone {
 
 
-int perform_fetch(int args, char** argv) {
-  std::cerr << "fetch not yet implemented." << std::endl;
+using namespace appc::discovery;
+
+
+int perform_fetch(const std::vector<std::string>& args) {
+  if (args.size() < 2) {
+    std::cerr << "Missing <app name>" << std::endl;
+    return 1;
+  }
+  const Name name{args[1]};
+
+  const Labels labels{
+    {"os", "linux"},
+    {"version", "0.0.1"},
+    {"arch", "x86_64"}
+  };
+
+  // By configuring the local strategy and the simple strategy with the same
+  // storage location, the local strategy functions as a cache.
+  // (currently, the directory in the base uri must exist)
+
+  const auto local_strategy = strategy::local::StrategyBuilder()
+                                .with_storage_base_uri("file:///tmp/images")
+                                .build();
+
+  const auto simple_strategy = strategy::simple::StrategyBuilder()
+                                 .with_storage_base_uri("file:///tmp/images")
+                                 .build();
+
+  auto provider = ImageProvider({
+    from_result(local_strategy),
+    from_result(simple_strategy)
+  });
+
+  const auto image_location = provider.get(name, labels);
+
+  if (!image_location) {
+    std::cerr << "Failed to retrieve image for " << name << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  std::cout << from_result(image_location) << std::endl;
+
   return 0;
 }
 

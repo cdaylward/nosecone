@@ -42,6 +42,7 @@ int unknown_command(const std::string& command);
 
 
 Dispatch dispatch{};
+const std::string storage_path{"file:///tmp/images"};
 
 
 int main(int args, char** argv)
@@ -95,7 +96,7 @@ int main(int args, char** argv)
     return unknown_command(command);
   }
 
-  return dispatch.run(command, 0, NULL);
+  return dispatch.run(command, ordered);
 }
 
 

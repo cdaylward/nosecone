@@ -23,7 +23,7 @@
 namespace nosecone {
 
 
-int perform_list(int args, char** argv) {
+int perform_list(const std::vector<std::string>& args) {
   std::cerr << "list not yet implemented." << std::endl;
   return 0;
 }

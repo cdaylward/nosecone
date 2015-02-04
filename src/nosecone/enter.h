@@ -23,7 +23,7 @@
 namespace nosecone {
 
 
-int perform_enter(int args, char** argv);
+int perform_enter(const std::vector<std::string>& args);
 
 
 const Command enter{
