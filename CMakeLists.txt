@@ -11,6 +11,7 @@ find_library(LIB_ARCHIVE NAMES archive PATHS ${3RDPARTY_USR}/lib)
 find_library(LIB_CURL NAMES curl PATHS ${3RDPARTY_USR}/lib)
 
 include_directories(src)
+include_directories(${3RDPARTY_USR}/include)
 
 file(GLOB NSCN_SOURCES src/nosecone/*.cpp)
 
