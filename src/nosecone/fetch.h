@@ -26,12 +26,22 @@ namespace nosecone {
 int perform_fetch(const std::vector<std::string>& args);
 
 
+namespace command {
+
+
 const Command fetch{
   "fetch",
-  "Fetches an image from a possibly remote source.",
-  "Usage: fetch <app name>",
+  "Fetches an image and stores it locally.",
+  "Usage: nscn fetch <app name> [<label name>:<label value> ...]\n\n"
+  "version, os, and arch labels default to 1.0.0, linux, and amd64 respectively.\n"
+  "The following commands are equivalent:\n"
+  "$ nscn fetch nosecone.net/example/worker\n"
+  "$ nscn fetch nosecone.net/example/worker version:1.0.0 os:linux arch:amd64\n",
   perform_fetch
 };
+
+
+} // namespace command
 
 
 } // namespace nosecone

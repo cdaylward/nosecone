@@ -26,12 +26,18 @@ namespace nosecone {
 int perform_list(const std::vector<std::string>& args);
 
 
+namespace command {
+
+
 const Command list{
   "list",
   "List containers.",
   "Usage: list",
   perform_list
 };
+
+
+} // namespace command
 
 
 } // namespace nosecone

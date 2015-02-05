@@ -26,12 +26,18 @@ namespace nosecone {
 int perform_enter(const std::vector<std::string>& args);
 
 
+namespace command {
+
+
 const Command enter{
   "enter",
   "Enter a running container.",
   "Usage: enter <container ID>",
   perform_enter
 };
+
+
+} // namespace command
 
 
 } // namespace nosecone

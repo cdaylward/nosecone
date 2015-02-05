@@ -26,12 +26,18 @@ namespace nosecone {
 int perform_gc(const std::vector<std::string>& args);
 
 
+namespace command {
+
+
 const Command gc{
   "gc",
   "Collect garbage.",
   "Usage: gc",
   perform_gc
 };
+
+
+} // namespace command
 
 
 } // namespace nosecone

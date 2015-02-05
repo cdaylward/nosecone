@@ -34,26 +34,43 @@ using namespace appc::discovery;
 int perform_fetch(const std::vector<std::string>& args) {
   if (args.size() < 2) {
     std::cerr << "Missing <app name>" << std::endl;
-    return 1;
+    return EXIT_FAILURE;
   }
+
   const Name name{args[1]};
 
-  const Labels labels{
+  // Use this set as default, required for simple discovery.
+  // These are overwritten if passed in by the user.
+  Labels labels{
     {"os", "linux"},
-    {"version", "0.0.1"},
-    {"arch", "x86_64"}
+    {"version", "1.0.0"},
+    {"arch", "amd64"}
   };
 
-  // By configuring the local strategy and the simple strategy with the same
-  // storage location, the local strategy functions as a cache.
-  // (currently, the directory in the base uri must exist)
+  if (args.size() > 2) {
+    for (auto i = args.begin() + 2; i != args.end(); i++) {
+      auto& label_set = *i;
+      auto delim = label_set.find(":");
+      if (delim == std::string::npos ||
+          delim == label_set.length() - 1) {
+        std::cerr << "Additional argument that isn't a label: " << label_set << std::endl;
+        return EXIT_FAILURE;
+      }
+      auto name = label_set.substr(0, delim);
+      auto value = label_set.substr(delim + 1);
+      labels[name] = value;
+    }
+  }
+
+  // TODO, plumb through to configuration.
+  const std::string storage_base{"file:///tmp/nosecone/images"};
 
   const auto local_strategy = strategy::local::StrategyBuilder()
-                                .with_storage_base_uri("file:///tmp/images")
+                                .with_storage_base_uri(storage_base)
                                 .build();
 
   const auto simple_strategy = strategy::simple::StrategyBuilder()
-                                 .with_storage_base_uri("file:///tmp/images")
+                                 .with_storage_base_uri(storage_base)
                                  .build();
 
   auto provider = ImageProvider({
@@ -70,7 +87,7 @@ int perform_fetch(const std::vector<std::string>& args) {
 
   std::cout << from_result(image_location) << std::endl;
 
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 

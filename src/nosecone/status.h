@@ -26,12 +26,18 @@ namespace nosecone {
 int perform_status(const std::vector<std::string>& args);
 
 
+namespace command {
+
+
 const Command status{
   "status",
   "Display the status of a container.",
   "Usage: status <container ID>",
   perform_status
 };
+
+
+} // namespace command
 
 
 } // namespace nosecone

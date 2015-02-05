@@ -26,12 +26,18 @@ namespace nosecone {
 int perform_run(const std::vector<std::string>& args);
 
 
+namespace command {
+
+
 const Command run{
   "run",
   "Execute a command in a new container.",
   "Usage: run <app name>",
   perform_run
 };
+
+
+} // namespace command
 
 
 } // namespace nosecone

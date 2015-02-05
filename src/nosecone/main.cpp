@@ -24,6 +24,7 @@
 #include <map>
 #include <tuple>
 
+#include "nosecone/config.h"
 #include "nosecone/enter.h"
 #include "nosecone/fetch.h"
 #include "nosecone/gc.h"
@@ -38,52 +39,39 @@ using namespace nosecone;
 
 void print_usage(const std::map<std::string, Command>& commands);
 void print_help(const Command& command);
-int unknown_command(const std::string& command);
+void unknown_command(const std::string& command);
 
 
 Dispatch dispatch{};
-const std::string storage_path{"file:///tmp/images"};
 
 
 int main(int args, char** argv)
 {
-  bool verbose;
+  dispatch.register_command(nosecone::command::enter);
+  dispatch.register_command(nosecone::command::fetch);
+  dispatch.register_command(nosecone::command::gc);
+  dispatch.register_command(nosecone::command::list);
+  dispatch.register_command(nosecone::command::run);
+  dispatch.register_command(nosecone::command::status);
 
-  dispatch.register_command(nosecone::enter);
-  dispatch.register_command(nosecone::fetch);
-  dispatch.register_command(nosecone::gc);
-  dispatch.register_command(nosecone::list);
-  dispatch.register_command(nosecone::run);
-  dispatch.register_command(nosecone::status);
-
-  for (int c = getopt(args, argv, "v"); c != -1; c = getopt(args, argv, "v")) {
-    switch (c) {
-      case 'v':
-        verbose = true;
-        break;
-      default:
-        print_usage(dispatch.commands);
-        return EXIT_FAILURE;
-    }
+  std::vector<std::string> arguments;
+  for (int i = 1; i < args; i++) {
+    arguments.emplace_back(argv[i]);
   }
 
-  std::vector<std::string> ordered;
-  for (int ind = optind; ind < args; ind++) {
-    ordered.emplace_back(argv[ind]);
-  }
-
-  if (ordered.empty()) {
+  if (arguments.empty()) {
     print_usage(dispatch.commands);
     return EXIT_FAILURE;
   }
 
-  const auto& command = ordered[0];
+  const auto& command = arguments[0];
 
   if (command == "help") {
-    if (ordered.size() == 2) {
-      const auto& topic = ordered[1];
+    if (arguments.size() == 2) {
+      const auto& topic = arguments[1];
       if (dispatch.commands.find(topic) == dispatch.commands.end()) {
-        return unknown_command(topic);
+        unknown_command(topic);
+        return EXIT_FAILURE;
       }
       print_help(dispatch.commands[topic]);
       return EXIT_SUCCESS;
@@ -93,17 +81,23 @@ int main(int args, char** argv)
   }
 
   if (dispatch.commands.find(command) == dispatch.commands.end()) {
-    return unknown_command(command);
+    unknown_command(command);
+    return EXIT_FAILURE;
   }
 
-  return dispatch.run(command, ordered);
+  // FIXME
+  const std::string mkdir_images = "mkdir -p -- " + config::images_path;
+  system(mkdir_images.c_str());
+  const std::string mkdir_containers = "mkdir -p -- " + config::containers_path;
+  system(mkdir_containers.c_str());
+
+  return dispatch.run(command, arguments);
 }
 
 
-int unknown_command(const std::string& command) {
+void unknown_command(const std::string& command) {
   std::cerr << "Unknown command: " << command << std::endl << std::endl;
   print_usage(dispatch.commands);
-  return EXIT_FAILURE;
 }
 
 
