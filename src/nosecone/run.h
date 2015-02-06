@@ -17,13 +17,15 @@
 
 #pragma once
 
+#include "appc/discovery/types.h"
 #include "nosecone/command.h"
 
 
 namespace nosecone {
 
 
-int perform_run(const std::vector<std::string>& args);
+int run(const appc::discovery::Name& name, const appc::discovery::Labels& labels);
+int process_run_arguments(const std::vector<std::string>& args);
 
 
 namespace command {
@@ -31,9 +33,9 @@ namespace command {
 
 const Command run{
   "run",
-  "Execute a command in a new container.",
+  "Execute an app in a new container.",
   "Usage: run <app name>",
-  perform_run
+  process_run_arguments
 };
 
 

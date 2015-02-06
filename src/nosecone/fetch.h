@@ -17,13 +17,18 @@
 
 #pragma once
 
+#include "appc/discovery/types.h"
+#include "appc/util/try.h"
 #include "nosecone/command.h"
 
 
 namespace nosecone {
 
 
-int perform_fetch(const std::vector<std::string>& args);
+using namespace appc::discovery;
+
+Try<URI> fetch(const Name& name, const Labels& labels);
+int process_fetch_arguments(const std::vector<std::string>& args);
 
 
 namespace command {
@@ -37,7 +42,7 @@ const Command fetch{
   "The following commands are equivalent:\n"
   "$ nscn fetch nosecone.net/example/worker\n"
   "$ nscn fetch nosecone.net/example/worker version:1.0.0 os:linux arch:amd64",
-  perform_fetch
+  process_fetch_arguments
 };
 
 

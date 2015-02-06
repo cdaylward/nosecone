@@ -23,7 +23,8 @@
 namespace nosecone {
 
 
-int perform_list(const std::vector<std::string>& args);
+int process_list_args(const std::vector<std::string>& args);
+int list(const std::vector<std::string>& container_dir);
 
 
 namespace command {
@@ -33,7 +34,7 @@ const Command list{
   "list",
   "List containers.",
   "Usage: list",
-  perform_list
+  process_list_args
 };
 
 

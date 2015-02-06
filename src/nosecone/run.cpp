@@ -17,15 +17,70 @@
 
 #include <iostream>
 
+#include "nosecone/help.h"
+#include "nosecone/config.h"
 #include "nosecone/run.h"
+#include "nosecone/fetch.h"
+#include "nosecone/validate.h"
 
+
+extern nosecone::Config config;
 
 namespace nosecone {
 
 
-int perform_run(const std::vector<std::string>& args) {
-  std::cerr << "run not yet implemented." << std::endl;
-  return 0;
+using namespace appc::discovery;
+
+
+int run(const Name& name, const Labels& labels) {
+  // FIXME
+  const std::string mkdir_containers = "mkdir -p -- " + config.containers_path;
+  system(mkdir_containers.c_str());
+
+  auto image_uri = fetch(name, labels);
+  if (!image_uri) return 1;
+
+  auto image_path = uri_file_path(from_result(image_uri));
+
+  validate(image_path);
+
+  return EXIT_SUCCESS;
+}
+
+
+int process_run_arguments(const std::vector<std::string>& args) {
+  if (args.size() < 2) {
+    std::cerr << "Missing argument: <app name>" << std::endl << std::endl;
+    print_help(command::run);
+    return EXIT_FAILURE;
+  }
+
+  const Name name{args[1]};
+
+  // Use this set as default, required for simple discovery.
+  // These are overwritten if passed in by the user.
+  Labels labels{
+    {"os", "linux"},
+    {"version", "1.0.0"},
+    {"arch", "amd64"}
+  };
+
+  if (args.size() > 2) {
+    for (auto i = args.begin() + 2; i != args.end(); i++) {
+      auto& label_set = *i;
+      auto delim = label_set.find(":");
+      if (delim == std::string::npos ||
+          delim == label_set.length() - 1) {
+        std::cerr << "Additional argument that isn't a label: " << label_set << std::endl;
+        return EXIT_FAILURE;
+      }
+      auto name = label_set.substr(0, delim);
+      auto value = label_set.substr(delim + 1);
+      labels[name] = value;
+    }
+  }
+
+  return run(name, labels);
 }
 
 

@@ -15,17 +15,37 @@
 // A (possibly updated) copy of of this software is available at
 // https://github.com/cdaylward/nosecone
 
+#include <dirent.h>
+
+#include <string>
 #include <iostream>
 
+#include "nosecone/config.h"
 #include "nosecone/list.h"
+
+
+extern nosecone::Config config;
 
 
 namespace nosecone {
 
 
-int perform_list(const std::vector<std::string>& args) {
-  std::cerr << "list not yet implemented." << std::endl;
-  return 0;
+int list(const std::string& container_dir) {
+  auto dir = opendir(container_dir.c_str());
+  if (dir == NULL) return EXIT_FAILURE;
+  for (auto entry = readdir(dir); entry != NULL; entry = readdir(dir)) {
+    const std::string filename{entry->d_name};
+    if (filename == "." || filename == "..") continue;
+    std::cout << filename << std::endl;
+  }
+  closedir(dir);
+
+  return EXIT_SUCCESS;
+}
+
+
+int process_list_args(const std::vector<std::string>& args) {
+  return list(config.containers_path);
 }
 
 

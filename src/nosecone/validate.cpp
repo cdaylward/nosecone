@@ -20,6 +20,8 @@
 #include "3rdparty/nlohmann/json.h"
 #include "appc/image/image.h"
 #include "appc/schema/image.h"
+#include "appc/util/try.h"
+#include "nosecone/config.h"
 #include "nosecone/help.h"
 #include "nosecone/validate.h"
 
@@ -27,17 +29,13 @@
 using namespace appc;
 using Json = nlohmann::json;
 
+extern nosecone::Config config;
+
+
 namespace nosecone {
 
 
-int perform_validate(const std::vector<std::string>& args) {
-  if (args.size() < 2) {
-    std::cerr << "Missing argument: <path to image>" << std::endl << std::endl;
-    print_help(command::validate);
-    return EXIT_FAILURE;
-  }
-  const std::string filename{args[1]};
-
+int validate(const std::string& filename) {
   image::Image image{filename};
 
   auto valid_structure = image.validate_structure();
@@ -78,6 +76,18 @@ int perform_validate(const std::vector<std::string>& args) {
   std::cerr << "ACI manifest is OK." << std::endl;
 
   return 0;
+}
+
+
+int process_validate_args(const std::vector<std::string>& args) {
+  if (args.size() < 2) {
+    std::cerr << "Missing argument: <path to image>" << std::endl << std::endl;
+    print_help(command::validate);
+    return EXIT_FAILURE;
+  }
+  const std::string filename{args[1]};
+
+  return validate(filename);
 }
 
 

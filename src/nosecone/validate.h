@@ -23,7 +23,8 @@
 namespace nosecone {
 
 
-int perform_validate(const std::vector<std::string>& args);
+int process_validate_args(const std::vector<std::string>& args);
+int validate(const std::string& filename);
 
 
 namespace command {
@@ -33,7 +34,7 @@ const Command validate{
   "validate",
   "Validate an App Container Image.",
   "Usage: nscn validate <path to image>",
-  perform_validate
+  process_validate_args
 };
 
 
