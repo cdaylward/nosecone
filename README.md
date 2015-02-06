@@ -17,8 +17,8 @@ Requires functional std::regex (If using gcc, >= 4.9)
 3. Run `./bin/nscn help`
 
 ## Example (run)
-`nscn run` does not yet create a container, it performs simple discovery, caches images in
-/tmp/nosecone/images, and validates the them.
+`nscn run` does not yet create a container. It performs simple discovery, caches images locally,
+and validates the them.
 
 nosecone.net/example/worker is an existing example app, the following example should work:
 ```
