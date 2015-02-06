@@ -22,7 +22,12 @@
 #include "appc/discovery/strategy/meta.h"
 #include "appc/discovery/strategy/simple.h"
 
+#include "nosecone/config.h"
 #include "nosecone/fetch.h"
+#include "nosecone/help.h"
+
+
+extern nosecone::Config config;
 
 
 namespace nosecone {
@@ -33,7 +38,8 @@ using namespace appc::discovery;
 
 int perform_fetch(const std::vector<std::string>& args) {
   if (args.size() < 2) {
-    std::cerr << "Missing <app name>" << std::endl;
+    std::cerr << "Missing argument: <app name>" << std::endl << std::endl;
+    print_help(command::fetch);
     return EXIT_FAILURE;
   }
 
@@ -61,6 +67,13 @@ int perform_fetch(const std::vector<std::string>& args) {
       labels[name] = value;
     }
   }
+
+  // FIXME
+  const std::string mkdir_images = "mkdir -p -- " + config.images_path;
+  system(mkdir_images.c_str());
+  const std::string mkdir_containers = "mkdir -p -- " + config.containers_path;
+  system(mkdir_containers.c_str());
+
 
   // TODO, plumb through to configuration.
   const std::string storage_base{"file:///tmp/nosecone/images"};

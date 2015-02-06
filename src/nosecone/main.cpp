@@ -28,6 +28,7 @@
 #include "nosecone/enter.h"
 #include "nosecone/fetch.h"
 #include "nosecone/gc.h"
+#include "nosecone/help.h"
 #include "nosecone/list.h"
 #include "nosecone/fetch.h"
 #include "nosecone/run.h"
@@ -36,11 +37,11 @@
 
 using namespace nosecone;
 
-
-void print_usage(const std::map<std::string, Command>& commands);
-void print_help(const Command& command);
-void unknown_command(const std::string& command);
-
+Config config{
+  false,
+  "/tmp/nosecone/images",
+  "/tmp/nosecone/containers"
+};
 
 Dispatch dispatch{};
 
@@ -85,43 +86,5 @@ int main(int args, char** argv)
     return EXIT_FAILURE;
   }
 
-  // FIXME
-  const std::string mkdir_images = "mkdir -p -- " + config::images_path;
-  system(mkdir_images.c_str());
-  const std::string mkdir_containers = "mkdir -p -- " + config::containers_path;
-  system(mkdir_containers.c_str());
-
   return dispatch.run(command, arguments);
-}
-
-
-void unknown_command(const std::string& command) {
-  std::cerr << "Unknown command: " << command << std::endl << std::endl;
-  print_usage(dispatch.commands);
-}
-
-
-void print_usage(const std::map<std::string, Command>& commands) {
-  std::cout << "nscn - nose cone, an app container executor." << std::endl << std::endl;
-  std::cout << "Usage: nscn [flags] <command> [command options]" << std::endl;
-  std::cout << "  Flags:" << std::endl;
-  std::cout << "    " << std::setw(6) << std::left << "-v";
-  std::cout << " - " << "Be verbose." << std::endl;
-  std::cout << "  Commands:" << std::endl;
-  for (const auto& pair : commands) {
-    const auto& name = pair.first;
-    const auto& command = pair.second;
-    std::cout << "    " << std::setw(6) << std::left << name;
-    std::cout << " - " << command.description << std::endl;
-  }
-  std::cout << std::endl;
-  std::cout << "Run `nscn help <command>` for more details on <command>." << std::endl;
-}
-
-
-void print_help(const Command& command) {
-  std::cout << command.name << " - " << command.description << std::endl;
-  std::cout << std::endl;
-  std::cout << command.help_text << std::endl;
-  std::cout << std::endl;
 }
