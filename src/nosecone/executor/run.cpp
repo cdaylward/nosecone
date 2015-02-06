@@ -15,29 +15,40 @@
 // A (possibly updated) copy of of this software is available at
 // https://github.com/cdaylward/nosecone
 
-#pragma once
+#include <iostream>
 
-#include "nosecone/command.h"
+#include "nosecone/help.h"
+#include "nosecone/config.h"
+#include "nosecone/executor/run.h"
+#include "nosecone/executor/fetch.h"
+#include "nosecone/executor/validate.h"
+
+
+extern nosecone::Config config;
 
 
 namespace nosecone {
+namespace executor {
 
 
-int perform_enter(const std::vector<std::string>& args);
+using namespace appc::discovery;
 
 
-namespace command {
+int run(const Name& name, const Labels& labels) {
+  // FIXME
+  const std::string mkdir_containers = "mkdir -p -- " + config.containers_path;
+  system(mkdir_containers.c_str());
+
+  auto image_uri = fetch(name, labels);
+  if (!image_uri) return 1;
+
+  auto image_path = uri_file_path(from_result(image_uri));
+
+  validate(image_path);
+
+  return EXIT_SUCCESS;
+}
 
 
-const Command enter{
-  "enter",
-  "Enter a running container.",
-  "Usage: enter <container ID>",
-  perform_enter
-};
-
-
-} // namespace command
-
-
+} // namespace executor
 } // namespace nosecone

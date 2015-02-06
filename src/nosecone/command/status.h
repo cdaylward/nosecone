@@ -21,12 +21,10 @@
 
 
 namespace nosecone {
+namespace command {
 
 
 int perform_status(const std::vector<std::string>& args);
-
-
-namespace command {
 
 
 const Command status{
@@ -38,6 +36,4 @@ const Command status{
 
 
 } // namespace command
-
-
 } // namespace nosecone

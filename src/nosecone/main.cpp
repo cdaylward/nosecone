@@ -25,15 +25,15 @@
 #include <tuple>
 
 #include "nosecone/config.h"
-#include "nosecone/enter.h"
-#include "nosecone/fetch.h"
-#include "nosecone/gc.h"
+#include "nosecone/command/enter.h"
+#include "nosecone/command/fetch.h"
+#include "nosecone/command/gc.h"
 #include "nosecone/help.h"
-#include "nosecone/list.h"
-#include "nosecone/fetch.h"
-#include "nosecone/run.h"
-#include "nosecone/status.h"
-#include "nosecone/validate.h"
+#include "nosecone/command/list.h"
+#include "nosecone/command/fetch.h"
+#include "nosecone/command/run.h"
+#include "nosecone/command/status.h"
+#include "nosecone/command/validate.h"
 
 
 using namespace nosecone;
@@ -69,7 +69,7 @@ int main(int args, char** argv)
 
   const auto& command = arguments[0];
 
-  if (command == "help") {
+  if (command == "help" || command == "--help") {
     if (arguments.size() == 2) {
       const auto& topic = arguments[1];
       if (dispatch.commands.find(topic) == dispatch.commands.end()) {
@@ -88,5 +88,5 @@ int main(int args, char** argv)
     return EXIT_FAILURE;
   }
 
-  return dispatch.run(command, arguments);
+  return dispatch.run(command, std::vector<std::string>{arguments.begin() + 1, arguments.end()});
 }

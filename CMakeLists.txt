@@ -23,7 +23,7 @@ set(LIB_ARCHIVE iconv lzma bz2 z xml2 ${3RDPARTY_USR}/lib/libarchive.a)
 find_library(LIB_CURL NAMES curl PATHS ${3RDPARTY_USR}/lib)
 
 
-file(GLOB NSCN_SOURCES src/nosecone/*.cpp)
+file(GLOB NSCN_SOURCES src/nosecone/executor/*.cpp src/nosecone/command/*.cpp src/nosecone/*.cpp)
 
 add_executable(nscn ${NSCN_SOURCES})
 target_link_libraries(nscn ${LIB_ARCHIVE} ${LIB_CURL})

@@ -15,30 +15,15 @@
 // A (possibly updated) copy of of this software is available at
 // https://github.com/cdaylward/nosecone
 
-#pragma once
+#include <iostream>
 
-#include "nosecone/command.h"
+#include "nosecone/executor/status.h"
 
 
 namespace nosecone {
+namespace executor {
 
 
-int process_list_args(const std::vector<std::string>& args);
-int list(const std::vector<std::string>& container_dir);
 
-
-namespace command {
-
-
-const Command list{
-  "list",
-  "List containers.",
-  "Usage: list",
-  process_list_args
-};
-
-
-} // namespace command
-
-
+} // namespace executor
 } // namespace nosecone

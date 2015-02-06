@@ -31,6 +31,7 @@ using namespace nosecone;
 extern Dispatch dispatch;
 static const unsigned int command_padding = 8;
 
+
 void print_usage(const std::map<std::string, Command>& commands) {
   std::cout << "nscn - nose cone, an app container executor." << std::endl << std::endl;
   std::cout << "Usage: nscn [flags] <command> [command options]" << std::endl;

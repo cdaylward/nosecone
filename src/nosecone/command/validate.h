@@ -15,38 +15,25 @@
 // A (possibly updated) copy of of this software is available at
 // https://github.com/cdaylward/nosecone
 
-#include <dirent.h>
+#pragma once
 
-#include <string>
-#include <iostream>
-
-#include "nosecone/config.h"
-#include "nosecone/list.h"
-
-
-extern nosecone::Config config;
+#include "nosecone/command.h"
 
 
 namespace nosecone {
+namespace command {
 
 
-int list(const std::string& container_dir) {
-  auto dir = opendir(container_dir.c_str());
-  if (dir == NULL) return EXIT_FAILURE;
-  for (auto entry = readdir(dir); entry != NULL; entry = readdir(dir)) {
-    const std::string filename{entry->d_name};
-    if (filename == "." || filename == "..") continue;
-    std::cout << filename << std::endl;
-  }
-  closedir(dir);
-
-  return EXIT_SUCCESS;
-}
+int perform_validate(const Arguments& args);
 
 
-int process_list_args(const std::vector<std::string>& args) {
-  return list(config.containers_path);
-}
+const Command validate{
+  "validate",
+  "Validate an App Container Image.",
+  "Usage: nscn validate <path to image>",
+  perform_validate
+};
 
 
+} // namespace command
 } // namespace nosecone

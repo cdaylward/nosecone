@@ -17,39 +17,23 @@
 
 #pragma once
 
-#include <functional>
-#include <map>
-#include <string>
-#include <vector>
+#include "nosecone/command.h"
 
 
 namespace nosecone {
+namespace command {
 
 
-using Argument = std::string;
-using Arguments = std::vector<std::string>;
+int perform_enter(const Arguments& args);
 
 
-struct Command {
-  std::string name;
-  std::string description;
-  std::string help_text;
-  std::function<int(const Arguments&)> entry_point;
+const Command enter{
+  "enter",
+  "Enter a running container.",
+  "Usage: enter <container ID>",
+  perform_enter
 };
 
 
-struct Dispatch {
-  std::map<std::string, Command> commands{};
-
-  void register_command(const Command& command) {
-    commands[command.name] = command;
-  }
-
-  int run(const std::string& command_name, const Arguments& args) {
-    const auto& command = commands[command_name];
-    return command.entry_point(args);
-  }
-};
-
-
+} // namespace command
 } // namespace nosecone

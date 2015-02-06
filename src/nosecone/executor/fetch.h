@@ -17,39 +17,18 @@
 
 #pragma once
 
-#include <functional>
-#include <map>
-#include <string>
-#include <vector>
+#include "appc/discovery/types.h"
 
 
 namespace nosecone {
+namespace executor {
 
 
-using Argument = std::string;
-using Arguments = std::vector<std::string>;
+using namespace appc::discovery;
 
 
-struct Command {
-  std::string name;
-  std::string description;
-  std::string help_text;
-  std::function<int(const Arguments&)> entry_point;
-};
+Try<URI> fetch(const Name& name, const Labels& labels);
 
 
-struct Dispatch {
-  std::map<std::string, Command> commands{};
-
-  void register_command(const Command& command) {
-    commands[command.name] = command;
-  }
-
-  int run(const std::string& command_name, const Arguments& args) {
-    const auto& command = commands[command_name];
-    return command.entry_point(args);
-  }
-};
-
-
+} // namespace executor
 } // namespace nosecone

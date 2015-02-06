@@ -15,18 +15,22 @@
 // A (possibly updated) copy of of this software is available at
 // https://github.com/cdaylward/nosecone
 
-#include <iostream>
+#include "nosecone/config.h"
+#include "nosecone/command/list.h"
+#include "nosecone/executor/list.h"
 
-#include "nosecone/enter.h"
+
+extern nosecone::Config config;
 
 
 namespace nosecone {
+namespace command {
 
 
-int perform_enter(const std::vector<std::string>& args) {
-  std::cerr << "enter not yet implemented." << std::endl;
-  return 0;
+int perform_list(const Arguments& args) {
+  return executor::list(config.containers_path);
 }
 
 
+} // namespace command
 } // namespace nosecone

@@ -15,18 +15,25 @@
 // A (possibly updated) copy of of this software is available at
 // https://github.com/cdaylward/nosecone
 
-#include <iostream>
+#pragma once
 
-#include "nosecone/status.h"
+#include "nosecone/command.h"
 
 
 namespace nosecone {
+namespace command {
 
 
-int perform_status(const std::vector<std::string>& args) {
-  std::cerr << "status not yet implemented." << std::endl;
-  return 0;
-}
+int perform_run(const Arguments& args);
 
 
+const Command run{
+  "run",
+  "Execute an app in a new container.",
+  "Usage: run <app name>",
+  perform_run
+};
+
+
+} // namespace command
 } // namespace nosecone

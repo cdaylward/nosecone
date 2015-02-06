@@ -23,60 +23,29 @@
 #include "appc/discovery/strategy/simple.h"
 
 #include "nosecone/config.h"
-#include "nosecone/fetch.h"
 #include "nosecone/help.h"
+#include "nosecone/command/fetch.h"
+#include "nosecone/executor/fetch.h"
 
 
 extern nosecone::Config config;
 
 
 namespace nosecone {
+namespace command {
 
 
 using namespace appc::discovery;
 
 
-Try<URI> fetch(const appc::discovery::Name& name, const appc::discovery::Labels& labels)
-{
-  // FIXME
-  const std::string mkdir_images = "mkdir -p -- " + config.images_path;
-  system(mkdir_images.c_str());
-
-  const std::string storage_base = "file://" + config.images_path;
-
-  const auto local_strategy = strategy::local::StrategyBuilder()
-                                .with_storage_base_uri(storage_base)
-                                .build();
-
-  const auto simple_strategy = strategy::simple::StrategyBuilder()
-                                 .with_storage_base_uri(storage_base)
-                                 .build();
-
-  auto provider = ImageProvider({
-    from_result(local_strategy),
-    from_result(simple_strategy)
-  });
-
-  const auto image_location = provider.get(name, labels);
-
-  if (!image_location) {
-    std::cerr << "Failed to retrieve image for " << name << std::endl;
-  }
-
-  std::cout << from_result(image_location) << std::endl;
-
-  return image_location;
-}
-
-
-int process_fetch_arguments(const std::vector<std::string>& args) {
-  if (args.size() < 2) {
+int perform_fetch(const std::vector<std::string>& args) {
+  if (args.size() < 1) {
     std::cerr << "Missing argument: <app name>" << std::endl << std::endl;
-    print_help(command::fetch);
+    print_help(fetch);
     return EXIT_FAILURE;
   }
 
-  const Name name{args[1]};
+  const Name name{args[0]};
 
   // Use this set as default, required for simple discovery.
   // These are overwritten if passed in by the user.
@@ -86,8 +55,8 @@ int process_fetch_arguments(const std::vector<std::string>& args) {
     {"arch", "amd64"}
   };
 
-  if (args.size() > 2) {
-    for (auto i = args.begin() + 2; i != args.end(); i++) {
+  if (args.size() > 1) {
+    for (auto i = args.begin() + 1; i != args.end(); i++) {
       auto& label_set = *i;
       auto delim = label_set.find(":");
       if (delim == std::string::npos ||
@@ -101,10 +70,11 @@ int process_fetch_arguments(const std::vector<std::string>& args) {
     }
   }
 
-  fetch(name, labels);
+  executor::fetch(name, labels);
 
   return EXIT_SUCCESS;
 }
 
 
+} // namespace command
 } // namespace nosecone

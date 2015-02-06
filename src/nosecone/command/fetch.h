@@ -17,29 +17,27 @@
 
 #pragma once
 
-#include "appc/discovery/types.h"
 #include "nosecone/command.h"
 
 
 namespace nosecone {
-
-
-int run(const appc::discovery::Name& name, const appc::discovery::Labels& labels);
-int process_run_arguments(const std::vector<std::string>& args);
-
-
 namespace command {
 
 
-const Command run{
-  "run",
-  "Execute an app in a new container.",
-  "Usage: run <app name>",
-  process_run_arguments
+int perform_fetch(const Arguments& args);
+
+
+const Command fetch{
+  "fetch",
+  "Fetches an image and stores it locally.",
+  "Usage: nscn fetch <app name> [<label name>:<label value> ...]\n\n"
+  "version, os, and arch labels default to 1.0.0, linux, and amd64 respectively.\n"
+  "The following commands are equivalent:\n"
+  "$ nscn fetch nosecone.net/example/worker\n"
+  "$ nscn fetch nosecone.net/example/worker version:1.0.0 os:linux arch:amd64",
+  perform_fetch
 };
 
 
 } // namespace command
-
-
 } // namespace nosecone

@@ -17,45 +17,31 @@
 
 #include <iostream>
 
+#include "appc/discovery/types.h"
 #include "nosecone/help.h"
 #include "nosecone/config.h"
-#include "nosecone/run.h"
-#include "nosecone/fetch.h"
-#include "nosecone/validate.h"
+#include "nosecone/command/run.h"
+#include "nosecone/executor/run.h"
 
 
 extern nosecone::Config config;
 
+
 namespace nosecone {
+namespace command {
 
 
 using namespace appc::discovery;
 
 
-int run(const Name& name, const Labels& labels) {
-  // FIXME
-  const std::string mkdir_containers = "mkdir -p -- " + config.containers_path;
-  system(mkdir_containers.c_str());
-
-  auto image_uri = fetch(name, labels);
-  if (!image_uri) return 1;
-
-  auto image_path = uri_file_path(from_result(image_uri));
-
-  validate(image_path);
-
-  return EXIT_SUCCESS;
-}
-
-
-int process_run_arguments(const std::vector<std::string>& args) {
-  if (args.size() < 2) {
+int perform_run(const Arguments& args) {
+  if (args.size() < 1) {
     std::cerr << "Missing argument: <app name>" << std::endl << std::endl;
     print_help(command::run);
     return EXIT_FAILURE;
   }
 
-  const Name name{args[1]};
+  const Name name{args[0]};
 
   // Use this set as default, required for simple discovery.
   // These are overwritten if passed in by the user.
@@ -65,8 +51,8 @@ int process_run_arguments(const std::vector<std::string>& args) {
     {"arch", "amd64"}
   };
 
-  if (args.size() > 2) {
-    for (auto i = args.begin() + 2; i != args.end(); i++) {
+  if (args.size() > 1) {
+    for (auto i = args.begin() + 1; i != args.end(); i++) {
       auto& label_set = *i;
       auto delim = label_set.find(":");
       if (delim == std::string::npos ||
@@ -80,8 +66,9 @@ int process_run_arguments(const std::vector<std::string>& args) {
     }
   }
 
-  return run(name, labels);
+  return executor::run(name, labels);
 }
 
 
+} // namespace command
 } // namespace nosecone

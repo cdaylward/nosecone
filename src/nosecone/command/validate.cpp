@@ -15,41 +15,29 @@
 // A (possibly updated) copy of of this software is available at
 // https://github.com/cdaylward/nosecone
 
-#pragma once
+#include <iostream>
 
-#include <functional>
-#include <map>
-#include <string>
-#include <vector>
+#include "nosecone/help.h"
+#include "nosecone/command/validate.h"
+#include "nosecone/executor/validate.h"
+
 
 
 namespace nosecone {
+namespace command {
 
 
-using Argument = std::string;
-using Arguments = std::vector<std::string>;
-
-
-struct Command {
-  std::string name;
-  std::string description;
-  std::string help_text;
-  std::function<int(const Arguments&)> entry_point;
-};
-
-
-struct Dispatch {
-  std::map<std::string, Command> commands{};
-
-  void register_command(const Command& command) {
-    commands[command.name] = command;
+int perform_validate(const Arguments& args) {
+  if (args.size() < 1) {
+    std::cerr << "Missing argument: <path to image>" << std::endl << std::endl;
+    print_help(command::validate);
+    return EXIT_FAILURE;
   }
+  const std::string filename{args[0]};
 
-  int run(const std::string& command_name, const Arguments& args) {
-    const auto& command = commands[command_name];
-    return command.entry_point(args);
-  }
-};
+  return executor::validate(filename);
+}
 
 
+} // namespace command
 } // namespace nosecone

@@ -17,13 +17,13 @@
 
 #include <iostream>
 
+#include "3rdparty/cdaylward/pathname.h"
 #include "3rdparty/nlohmann/json.h"
 #include "appc/image/image.h"
 #include "appc/schema/image.h"
 #include "appc/util/try.h"
 #include "nosecone/config.h"
-#include "nosecone/help.h"
-#include "nosecone/validate.h"
+#include "nosecone/executor/validate.h"
 
 
 using namespace appc;
@@ -33,6 +33,7 @@ extern nosecone::Config config;
 
 
 namespace nosecone {
+namespace executor {
 
 
 int validate(const std::string& filename) {
@@ -43,8 +44,6 @@ int validate(const std::string& filename) {
     std::cerr << filename << " is not a valid ACI: " << valid_structure.message << std::endl;
     return EXIT_FAILURE;
   }
-
-  std::cerr << "ACI structure is OK." << std::endl;
 
   auto manifest_text = image.manifest();
   if (!manifest_text) {
@@ -73,22 +72,11 @@ int validate(const std::string& filename) {
     return EXIT_FAILURE;
   }
 
-  std::cerr << "ACI manifest is OK." << std::endl;
+  std::cerr << pathname::base(filename) << " OK" << std::endl; 
 
   return 0;
 }
 
 
-int process_validate_args(const std::vector<std::string>& args) {
-  if (args.size() < 2) {
-    std::cerr << "Missing argument: <path to image>" << std::endl << std::endl;
-    print_help(command::validate);
-    return EXIT_FAILURE;
-  }
-  const std::string filename{args[1]};
-
-  return validate(filename);
-}
-
-
+} // namespace executor
 } // namespace nosecone
