@@ -1,13 +1,13 @@
 #pragma once
 
 namespace nosecone {
-namespace config {
 
 
-bool verbose{false};
-std::string images_path{"/tmp/nosecone/images"};
-std::string containers_path{"/tmp/nosecone/containers"};
+struct Config {
+  bool verbose;
+  std::string images_path;
+  std::string containers_path;
+};
 
 
-} // namespace config
 } // namespace nosecone
