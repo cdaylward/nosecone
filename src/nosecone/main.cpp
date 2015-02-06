@@ -33,6 +33,7 @@
 #include "nosecone/fetch.h"
 #include "nosecone/run.h"
 #include "nosecone/status.h"
+#include "nosecone/validate.h"
 
 
 using namespace nosecone;
@@ -54,6 +55,7 @@ int main(int args, char** argv)
   dispatch.register_command(nosecone::command::list);
   dispatch.register_command(nosecone::command::run);
   dispatch.register_command(nosecone::command::status);
+  dispatch.register_command(nosecone::command::validate);
 
   std::vector<std::string> arguments;
   for (int i = 1; i < args; i++) {

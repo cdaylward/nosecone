@@ -7,11 +7,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(3rdparty)
 
-find_library(LIB_ARCHIVE NAMES archive PATHS ${3RDPARTY_USR}/lib)
-find_library(LIB_CURL NAMES curl PATHS ${3RDPARTY_USR}/lib)
-
 include_directories(src)
 include_directories(${3RDPARTY_USR}/include)
+
+#find_library(LIB_ARCHIVE NAMES archive PATHS ${3RDPARTY_USR}/lib)
+set(LIB_ARCHIVE iconv lzma bz2 z xml2 ${3RDPARTY_USR}/lib/libarchive.a)
+
+find_library(LIB_CURL NAMES curl PATHS ${3RDPARTY_USR}/lib)
+
 
 file(GLOB NSCN_SOURCES src/nosecone/*.cpp)
 
