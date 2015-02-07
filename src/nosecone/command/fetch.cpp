@@ -47,13 +47,7 @@ int perform_fetch(const std::vector<std::string>& args) {
 
   const Name name{args[0]};
 
-  // Use this set as default, required for simple discovery.
-  // These are overwritten if passed in by the user.
-  Labels labels{
-    {"os", "linux"},
-    {"version", "1.0.0"},
-    {"arch", "amd64"}
-  };
+  Labels labels = config.default_labels;
 
   if (args.size() > 1) {
     for (auto i = args.begin() + 1; i != args.end(); i++) {

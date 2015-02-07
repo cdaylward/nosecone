@@ -41,7 +41,12 @@ using namespace nosecone;
 Config config{
   false,
   "/tmp/nosecone/images",
-  "/tmp/nosecone/containers"
+  "/tmp/nosecone/containers",
+  {
+    {"os", "linux"},
+    {"version", "1.0.0"},
+    {"arch", "amd64"}
+  }
 };
 
 Dispatch dispatch{};
