@@ -1,0 +1,44 @@
+// Copyright 2015 Charles D. Aylward
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// A (possibly updated) copy of of this software is available at
+// https://github.com/cdaylward/nosecone
+
+#pragma once
+
+
+#include "appc/os/process.h"
+
+
+namespace nosecone {
+namespace executor {
+
+
+inline Try<std::string> new_uuid() {
+  // FIXME
+  const auto raw_try = appc::os::get_process_output("/usr/bin/uuidgen", 40);
+  if (!raw_try) {
+    return Failure<std::string>(std::string{"Could not generate uuid: "} + raw_try.failure_reason());
+  }
+  const auto raw = from_result(raw_try);
+  if (raw.size() < 36) {
+    return Failure<std::string>("uuidgen did not produce a valid uuid, too short.");
+  }
+  return Result(raw.substr(0, 36));
+}
+
+
+} // namespace executor
+} // namespace nosecone
+
