@@ -20,15 +20,23 @@ Requires functional std::regex (If using gcc, >= 4.9)
 `nscn run` does not yet create a container. It performs simple discovery, caches images locally,
 and validates the them.
 
-nosecone.net/example/worker is an existing example app, the following example should work:
+nosecone.net/example/app is an existing example app, the following example should work:
 ```
-$ ./bin/nscn run nosecone.net/example/worker
+$ ./bin/nscn run nosecone.net/example/app
+Resolved: nosecone.net/example/app -> file:///tmp/nosecone/images/nosecone.net/example/app-1.0.0-linux-amd64.aci
+Fetched: file:///tmp/nosecone/images/nosecone.net/example/app-1.0.0-linux-amd64.aci
+Location: file:///tmp/nosecone/images/nosecone.net/example/app-1.0.0-linux-amd64.aci
+app-1.0.0-linux-amd64.aci OK
+Dependency: nosecone.net/example/app requires nosecone.net/example/worker
 Resolved: nosecone.net/example/worker -> file:///tmp/nosecone/images/nosecone.net/example/worker-1.0.0-linux-amd64.aci
-Fetch failed: file:///tmp/nosecone/images/nosecone.net/example/worker-1.0.0-linux-amd64.aci No such file or directory
-Resolved: nosecone.net/example/worker -> https://nosecone.net/example/worker-1.0.0-linux-amd64.aci
-Fetched: https://nosecone.net/example/worker-1.0.0-linux-amd64.aci
+Fetched: file:///tmp/nosecone/images/nosecone.net/example/worker-1.0.0-linux-amd64.aci
 Location: file:///tmp/nosecone/images/nosecone.net/example/worker-1.0.0-linux-amd64.aci
 worker-1.0.0-linux-amd64.aci OK
+Dependency: nosecone.net/example/app requires nosecone.net/example/database
+Resolved: nosecone.net/example/database -> file:///tmp/nosecone/images/nosecone.net/example/database-1.0.0-linux-amd64.aci
+Fetched: file:///tmp/nosecone/images/nosecone.net/example/database-1.0.0-linux-amd64.aci
+Location: file:///tmp/nosecone/images/nosecone.net/example/database-1.0.0-linux-amd64.aci
+database-1.0.0-linux-amd64.aci OK
 
 $ actool validate /tmp/nosecone/images/nosecone.net/example/worker-1.0.0-linux-amd64.aci
 ```
@@ -52,7 +60,7 @@ Executor implementation status (list not complete):
     - [x] Fetch image using simple discovery.
     - [ ] Fetch image using meta discovery on fall-back.
     - [x] Cache image locally.
-    - [ ] Inspect image for dependencies and fetch them.
+    - [x] Inspect image for dependencies and fetch them.
     - [ ] Overlay images' rootfs to container root file system.
     - [ ] Create container context.
     - [ ] Enter container.
