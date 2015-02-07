@@ -28,7 +28,7 @@ namespace executor {
 using namespace appc;
 
 
-Status validate(const std::string& filename);
+int validate(const std::string& filename);
 Status validate_structure(const std::string& filename);
 Try<schema::ImageManifest> get_validated_manifest(const std::string& filename);
 

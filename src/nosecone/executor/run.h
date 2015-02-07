@@ -18,14 +18,17 @@
 #pragma once
 
 #include "appc/discovery/types.h"
-#include "nosecone/command.h"
+#include "appc/util/status.h"
 
 
 namespace nosecone {
 namespace executor {
 
 
-int run(const appc::discovery::Name& name, const appc::discovery::Labels& labels);
+using namespace appc;
+
+
+int run(const discovery::Name& name, const discovery::Labels& labels);
 
 
 } // namespace executor

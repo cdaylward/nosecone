@@ -35,14 +35,20 @@ namespace executor {
 using namespace appc;
 
 
-Status validate(const std::string& filename) {
+int validate(const std::string& filename) {
   auto valid_structure = validate_structure(filename);
-  if (!valid_structure) return valid_structure;
+  if (!valid_structure) {
+    std::cerr << valid_structure.message << std::endl;
+    return EXIT_FAILURE;
+  }
 
   auto manifest = get_validated_manifest(filename);
-  if (!manifest) return Invalid(manifest.failure_reason());
+  if (!manifest) {
+    std::cerr << manifest.failure_reason() << std::endl;
+    return EXIT_FAILURE;
+  }
 
-  return Success();
+  return EXIT_SUCCESS;
 }
 
 
@@ -56,6 +62,7 @@ Status validate_structure(const std::string& filename) {
 
   return Success();
 }
+
 
 Try<schema::ImageManifest> get_validated_manifest(const std::string& filename) {
   using Json = appc::schema::Json;
