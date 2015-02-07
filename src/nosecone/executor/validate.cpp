@@ -23,6 +23,7 @@
 #include "appc/util/try.h"
 #include "nosecone/config.h"
 #include "nosecone/executor/validate.h"
+#include "nosecone/executor/image.h"
 
 
 extern nosecone::Config config;
@@ -42,7 +43,7 @@ int validate(const std::string& filename) {
     return EXIT_FAILURE;
   }
 
-  auto manifest = get_validated_manifest(filename);
+  auto manifest = get_validated_image(filename);
   if (!manifest) {
     std::cerr << manifest.failure_reason() << std::endl;
     return EXIT_FAILURE;
@@ -64,14 +65,14 @@ Status validate_structure(const std::string& filename) {
 }
 
 
-Try<schema::ImageManifest> get_validated_manifest(const std::string& filename) {
+Try<ValidatedImage> get_validated_image(const std::string& filename) {
   using Json = appc::schema::Json;
 
   image::Image image{filename};
 
   auto manifest_text = image.manifest();
   if (!manifest_text) {
-    return Failure<schema::ImageManifest>(
+    return Failure<ValidatedImage>(
         std::string{"Could not retrieve manifest from ACI: "} + manifest_text.failure_reason());
   }
 
@@ -79,24 +80,24 @@ Try<schema::ImageManifest> get_validated_manifest(const std::string& filename) {
   try {
     manifest_json = Json::parse(from_result(manifest_text));
   } catch (const std::invalid_argument& err) {
-    return Failure<schema::ImageManifest>(std::string{"Manifest is invalid JSON: "} + err.what());
+    return Failure<ValidatedImage>(std::string{"Manifest is invalid JSON: "} + err.what());
   }
 
   auto manifest = schema::ImageManifest::from_json(manifest_json);
   if (!manifest) {
-    return Failure<schema::ImageManifest>(
+    return Failure<ValidatedImage>(
         std::string{"Could not parse: "} + manifest.failure_reason());
   }
 
   auto valid = manifest->validate();
   if (!valid) {
-    return Failure<schema::ImageManifest>(
+    return Failure<ValidatedImage>(
         std::string{"Manifest is invalid: "} + valid.message);
   }
 
   std::cerr << pathname::base(filename) << " OK" << std::endl;
 
-  return manifest;
+  return Result(ValidatedImage{image, from_result(manifest)});
 }
 
 

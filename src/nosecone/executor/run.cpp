@@ -25,6 +25,7 @@
 #include "nosecone/executor/run.h"
 #include "nosecone/executor/fetch.h"
 #include "nosecone/executor/validate.h"
+#include "nosecone/executor/image.h"
 
 
 extern nosecone::Config config;
@@ -37,48 +38,48 @@ namespace executor {
 using namespace appc;
 
 
-using Manifests = std::vector<schema::ImageManifest>;
+using ValidatedImages = std::vector<ValidatedImage>;
 
 
-Try<Manifests>
+Try<ValidatedImages>
 fetch_and_validate(const discovery::Name& name,
                    const discovery::Labels& labels,
                    const bool with_dependencies = false,
-                   Manifests dependencies = Manifests{}) {
+                   ValidatedImages dependencies = ValidatedImages{}) {
   auto image_uri = fetch(name, labels);
-  if (!image_uri) return Failure<Manifests>(image_uri.failure_reason());
+  if (!image_uri) return Failure<ValidatedImages>(image_uri.failure_reason());
 
   auto image_path = uri_file_path(from_result(image_uri));
 
   auto valid_structure = validate_structure(image_path);
-  if (!valid_structure) return Failure<Manifests>(valid_structure.message);
+  if (!valid_structure) return Failure<ValidatedImages>(valid_structure.message);
 
-  auto manifest_try = get_validated_manifest(image_path);
-  if (!manifest_try) return Failure<Manifests>(manifest_try.failure_reason());
+  auto valid_image_try = get_validated_image(image_path);
+  if (!valid_image_try) return Failure<ValidatedImages>(valid_image_try.failure_reason());
 
-  auto manifest = from_result(manifest_try);
+  auto valid_image = from_result(valid_image_try);
 
-  dependencies.push_back(manifest);
+  dependencies.push_back(valid_image);
 
   // TODO is depth-first ok?
-  if (with_dependencies && manifest.dependencies) {
-    for (const auto& dependency : from_some(manifest.dependencies)) {
-      std::cerr << "Dependency: " << manifest.name.value << " requires ";
+  if (with_dependencies && valid_image.manifest.dependencies) {
+    for (const auto& dependency : from_some(valid_image.manifest.dependencies)) {
+      std::cerr << "Dependency: " << valid_image.manifest.name.value << " requires ";
       std::cerr << dependency.app_name.value << std::endl;
       Labels dependency_labels = config.default_labels;
       if (dependency.labels) {
         dependency_labels = from_some(dependency.labels);
       }
-      auto downstream_manifests_try = fetch_and_validate(dependency.app_name,
+      auto downstream_image_try = fetch_and_validate(dependency.app_name,
                                                          labels,
                                                          true,
                                                          dependencies);
-      if (!downstream_manifests_try) {
-        return Failure<Manifests>(downstream_manifests_try.failure_reason());
+      if (!downstream_image_try) {
+        return Failure<ValidatedImages>(downstream_image_try.failure_reason());
       }
-      auto downstream_manifests = from_result(downstream_manifests_try);
-      std::copy(downstream_manifests.begin(),
-                downstream_manifests.end(),
+      auto downstream_images = from_result(downstream_image_try);
+      std::copy(downstream_images.begin(),
+                downstream_images.end(),
                 std::back_inserter(dependencies));
     }
   }
@@ -94,13 +95,13 @@ int run(const discovery::Name& name, const discovery::Labels& labels) {
     std::cerr << "Could not create dir for containers: " << strerror(errno) << std::endl;
   }
 
-  auto manifests_try = fetch_and_validate(name, labels, true);
-  if (!manifests_try) {
-    std::cerr << manifests_try.failure_reason() << std::endl;
+  auto images_try = fetch_and_validate(name, labels, true);
+  if (!images_try) {
+    std::cerr << images_try.failure_reason() << std::endl;
     return EXIT_FAILURE;
   }
 
-  auto manifests = from_result(manifests_try);
+  auto images = from_result(images_try);
 
   return EXIT_SUCCESS;
 }

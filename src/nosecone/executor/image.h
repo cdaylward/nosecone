@@ -17,9 +17,8 @@
 
 #pragma once
 
+#include "appc/image/image.h"
 #include "appc/schema/image.h"
-#include "appc/util/status.h"
-#include "nosecone/executor/image.h"
 
 
 namespace nosecone {
@@ -29,9 +28,10 @@ namespace executor {
 using namespace appc;
 
 
-int validate(const std::string& filename);
-Status validate_structure(const std::string& filename);
-Try<ValidatedImage> get_validated_image(const std::string& filename);
+struct ValidatedImage {
+  image::Image image;
+  schema::ImageManifest manifest;
+};
 
 
 } // namespace executor
