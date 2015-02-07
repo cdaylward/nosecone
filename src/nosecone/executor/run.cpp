@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <iostream>
 
+#include "3rdparty/cdaylward/pathname.h"
 #include "appc/schema/image.h"
 #include "nosecone/help.h"
 #include "nosecone/config.h"
@@ -26,6 +27,7 @@
 #include "nosecone/executor/fetch.h"
 #include "nosecone/executor/validate.h"
 #include "nosecone/executor/image.h"
+#include "nosecone/executor/uuid.h"
 
 
 extern nosecone::Config config;
@@ -93,6 +95,7 @@ int run(const discovery::Name& name, const discovery::Labels& labels) {
   const std::string mkdir_containers = "mkdir -p -- " + config.containers_path;
   if (system(mkdir_containers.c_str()) != 0) {
     std::cerr << "Could not create dir for containers: " << strerror(errno) << std::endl;
+    return EXIT_FAILURE;
   }
 
   auto images_try = fetch_and_validate(name, labels, true);
@@ -102,6 +105,26 @@ int run(const discovery::Name& name, const discovery::Labels& labels) {
   }
 
   auto images = from_result(images_try);
+
+  const auto uuid_try = new_uuid();
+  if (!uuid_try) {
+    std::cerr << "Could not generate uuid: " << uuid_try.failure_reason() << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  const auto uuid = from_result(uuid_try);
+
+  const std::string container_home = pathname::join(config.containers_path, uuid);
+  const std::string rootfs_path = pathname::join(container_home, "rootfs");
+  const std::string mkdir_container_home = "mkdir -p -- " + rootfs_path;
+  if (system(mkdir_container_home.c_str()) != 0) {
+    std::cerr << "Could not create dir for container: " << strerror(errno) << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  for (auto& image : images) {
+    image.image.extract_rootfs_to(rootfs_path);
+  }
 
   return EXIT_SUCCESS;
 }
