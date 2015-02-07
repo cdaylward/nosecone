@@ -18,16 +18,12 @@
 #include <iostream>
 
 #include "3rdparty/cdaylward/pathname.h"
-#include "3rdparty/nlohmann/json.h"
 #include "appc/image/image.h"
 #include "appc/schema/image.h"
 #include "appc/util/try.h"
 #include "nosecone/config.h"
 #include "nosecone/executor/validate.h"
 
-
-using namespace appc;
-using Json = nlohmann::json;
 
 extern nosecone::Config config;
 
@@ -36,45 +32,64 @@ namespace nosecone {
 namespace executor {
 
 
-int validate(const std::string& filename) {
+using namespace appc;
+
+
+Status validate(const std::string& filename) {
+  auto valid_structure = validate_structure(filename);
+  if (!valid_structure) return valid_structure;
+
+  auto manifest = get_validated_manifest(filename);
+  if (!manifest) return Invalid(manifest.failure_reason());
+
+  return Success();
+}
+
+
+Status validate_structure(const std::string& filename) {
   image::Image image{filename};
 
   auto valid_structure = image.validate_structure();
   if (!valid_structure) {
-    std::cerr << filename << " is not a valid ACI: " << valid_structure.message << std::endl;
-    return EXIT_FAILURE;
+    return Invalid(filename + " is not a valid ACI: " + valid_structure.message);
   }
+
+  return Success();
+}
+
+Try<schema::ImageManifest> get_validated_manifest(const std::string& filename) {
+  using Json = appc::schema::Json;
+
+  image::Image image{filename};
 
   auto manifest_text = image.manifest();
   if (!manifest_text) {
-    std::cerr << "Could not retrieve manifest from ACI: ";
-    std::cerr << manifest_text.failure_reason() << std::endl;
-    return EXIT_FAILURE;
+    return Failure<schema::ImageManifest>(
+        std::string{"Could not retrieve manifest from ACI: "} + manifest_text.failure_reason());
   }
 
   Json manifest_json;
   try {
     manifest_json = Json::parse(from_result(manifest_text));
   } catch (const std::invalid_argument& err) {
-    std::cerr << "Manifest is invalid JSON: " << err.what() << std::endl;
-    return EXIT_FAILURE;
+    return Failure<schema::ImageManifest>(std::string{"Manifest is invalid JSON: "} + err.what());
   }
 
   auto manifest = schema::ImageManifest::from_json(manifest_json);
   if (!manifest) {
-    std::cerr << "Could not parse: " << manifest.failure_reason() << std::endl;
-    return EXIT_FAILURE;
+    return Failure<schema::ImageManifest>(
+        std::string{"Could not parse: "} + manifest.failure_reason());
   }
 
   auto valid = manifest->validate();
   if (!valid) {
-    std::cerr << "Manifest is invalid: " << valid.message << std::endl;
-    return EXIT_FAILURE;
+    return Failure<schema::ImageManifest>(
+        std::string{"Manifest is invalid: "} + valid.message);
   }
 
-  std::cerr << pathname::base(filename) << " OK" << std::endl; 
+  std::cerr << pathname::base(filename) << " OK" << std::endl;
 
-  return 0;
+  return manifest;
 }
 
 

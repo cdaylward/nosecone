@@ -17,12 +17,20 @@
 
 #pragma once
 
+#include "appc/schema/image.h"
+#include "appc/util/status.h"
+
 
 namespace nosecone {
 namespace executor {
 
 
-int validate(const std::string& filename);
+using namespace appc;
+
+
+Status validate(const std::string& filename);
+Status validate_structure(const std::string& filename);
+Try<schema::ImageManifest> get_validated_manifest(const std::string& filename);
 
 
 } // namespace executor

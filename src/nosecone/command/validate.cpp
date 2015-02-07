@@ -22,7 +22,6 @@
 #include "nosecone/executor/validate.h"
 
 
-
 namespace nosecone {
 namespace command {
 
