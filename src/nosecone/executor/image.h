@@ -25,12 +25,9 @@ namespace nosecone {
 namespace executor {
 
 
-using namespace appc;
-
-
-struct ValidatedImage {
-  image::Image image;
-  schema::ImageManifest manifest;
+struct Image {
+  appc::image::Image image;
+  appc::schema::ImageManifest manifest;
 };
 
 

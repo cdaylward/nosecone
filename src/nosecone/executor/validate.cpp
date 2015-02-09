@@ -61,14 +61,14 @@ Status validate_structure(const std::string& filename) {
 }
 
 
-Try<ValidatedImage> get_validated_image(const std::string& filename) {
+Try<Image> get_validated_image(const std::string& filename) {
   using Json = appc::schema::Json;
 
   image::Image image{filename};
 
   auto manifest_text = image.manifest();
   if (!manifest_text) {
-    return Failure<ValidatedImage>(
+    return Failure<Image>(
         std::string{"Could not retrieve manifest from ACI: "} + manifest_text.failure_reason());
   }
 
@@ -76,24 +76,24 @@ Try<ValidatedImage> get_validated_image(const std::string& filename) {
   try {
     manifest_json = Json::parse(from_result(manifest_text));
   } catch (const std::invalid_argument& err) {
-    return Failure<ValidatedImage>(std::string{"Manifest is invalid JSON: "} + err.what());
+    return Failure<Image>(std::string{"Manifest is invalid JSON: "} + err.what());
   }
 
   auto manifest = schema::ImageManifest::from_json(manifest_json);
   if (!manifest) {
-    return Failure<ValidatedImage>(
+    return Failure<Image>(
         std::string{"Could not parse: "} + manifest.failure_reason());
   }
 
   auto valid = manifest->validate();
   if (!valid) {
-    return Failure<ValidatedImage>(
+    return Failure<Image>(
         std::string{"Manifest is invalid: "} + valid.message);
   }
 
   std::cerr << pathname::base(filename) << " OK" << std::endl;
 
-  return Result(ValidatedImage{image, from_result(manifest)});
+  return Result(Image{image, from_result(manifest)});
 }
 
 

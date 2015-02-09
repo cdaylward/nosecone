@@ -41,24 +41,24 @@ namespace executor {
 using namespace appc;
 
 
-using ValidatedImages = std::vector<ValidatedImage>;
+using Images = std::vector<Image>;
 
 
-Try<ValidatedImages>
+Try<Images>
 fetch_and_validate(const discovery::Name& name,
                    const discovery::Labels& labels,
                    const bool with_dependencies = false,
-                   ValidatedImages dependencies = ValidatedImages{}) {
+                   Images dependencies = Images{}) {
   auto image_uri = fetch(name, labels);
-  if (!image_uri) return Failure<ValidatedImages>(image_uri.failure_reason());
+  if (!image_uri) return Failure<Images>(image_uri.failure_reason());
 
   auto image_path = uri_file_path(from_result(image_uri));
 
   auto valid_structure = validate_structure(image_path);
-  if (!valid_structure) return Failure<ValidatedImages>(valid_structure.message);
+  if (!valid_structure) return Failure<Images>(valid_structure.message);
 
   auto valid_image_try = get_validated_image(image_path);
-  if (!valid_image_try) return Failure<ValidatedImages>(valid_image_try.failure_reason());
+  if (!valid_image_try) return Failure<Images>(valid_image_try.failure_reason());
 
   auto valid_image = from_result(valid_image_try);
 
@@ -78,7 +78,7 @@ fetch_and_validate(const discovery::Name& name,
                                                          true,
                                                          dependencies);
       if (!downstream_image_try) {
-        return Failure<ValidatedImages>(downstream_image_try.failure_reason());
+        return Failure<Images>(downstream_image_try.failure_reason());
       }
       auto downstream_images = from_result(downstream_image_try);
       std::copy(downstream_images.begin(),
