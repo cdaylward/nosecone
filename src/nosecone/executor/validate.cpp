@@ -21,12 +21,8 @@
 #include "appc/image/image.h"
 #include "appc/schema/image.h"
 #include "appc/util/try.h"
-#include "nosecone/config.h"
 #include "nosecone/executor/validate.h"
 #include "nosecone/executor/image.h"
-
-
-extern nosecone::Config config;
 
 
 namespace nosecone {
