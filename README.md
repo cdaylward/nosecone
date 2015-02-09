@@ -25,18 +25,33 @@ nosecone.net/example/app is an existing example app, the following example shoul
 $ ./bin/nscn run nosecone.net/example/app
 Resolved: nosecone.net/example/app -> file:///tmp/nosecone/images/nosecone.net/example/app-1.0.0-linux-amd64.aci
 Fetched: file:///tmp/nosecone/images/nosecone.net/example/app-1.0.0-linux-amd64.aci
-Location: file:///tmp/nosecone/images/nosecone.net/example/app-1.0.0-linux-amd64.aci
 app-1.0.0-linux-amd64.aci OK
 Dependency: nosecone.net/example/app requires nosecone.net/example/worker
 Resolved: nosecone.net/example/worker -> file:///tmp/nosecone/images/nosecone.net/example/worker-1.0.0-linux-amd64.aci
 Fetched: file:///tmp/nosecone/images/nosecone.net/example/worker-1.0.0-linux-amd64.aci
-Location: file:///tmp/nosecone/images/nosecone.net/example/worker-1.0.0-linux-amd64.aci
 worker-1.0.0-linux-amd64.aci OK
 Dependency: nosecone.net/example/app requires nosecone.net/example/database
 Resolved: nosecone.net/example/database -> file:///tmp/nosecone/images/nosecone.net/example/database-1.0.0-linux-amd64.aci
 Fetched: file:///tmp/nosecone/images/nosecone.net/example/database-1.0.0-linux-amd64.aci
-Location: file:///tmp/nosecone/images/nosecone.net/example/database-1.0.0-linux-amd64.aci
 database-1.0.0-linux-amd64.aci OK
+
+$ ./bin/nscn list
+Container ID
+29D3EEA7-306B-47CC-8576-CCE94E2A3383
+8F206A33-2D99-45EE-9026-02ED4E17561C
+
+$ find /tmp/nosecone/containers/29D3EEA7-306B-47CC-8576-CCE94E2A3383
+/tmp/nosecone/containers/29D3EEA7-306B-47CC-8576-CCE94E2A3383
+/tmp/nosecone/containers/29D3EEA7-306B-47CC-8576-CCE94E2A3383/rootfs
+/tmp/nosecone/containers/29D3EEA7-306B-47CC-8576-CCE94E2A3383/rootfs/usr
+/tmp/nosecone/containers/29D3EEA7-306B-47CC-8576-CCE94E2A3383/rootfs/usr/bin
+/tmp/nosecone/containers/29D3EEA7-306B-47CC-8576-CCE94E2A3383/rootfs/usr/bin/worker
+/tmp/nosecone/containers/29D3EEA7-306B-47CC-8576-CCE94E2A3383/rootfs/usr/sbin
+/tmp/nosecone/containers/29D3EEA7-306B-47CC-8576-CCE94E2A3383/rootfs/usr/sbin/database
+/tmp/nosecone/containers/29D3EEA7-306B-47CC-8576-CCE94E2A3383/rootfs/var
+/tmp/nosecone/containers/29D3EEA7-306B-47CC-8576-CCE94E2A3383/rootfs/var/lib
+/tmp/nosecone/containers/29D3EEA7-306B-47CC-8576-CCE94E2A3383/rootfs/var/lib/db
+
 
 $ actool validate /tmp/nosecone/images/nosecone.net/example/worker-1.0.0-linux-amd64.aci
 ```
@@ -45,11 +60,11 @@ $ actool validate /tmp/nosecone/images/nosecone.net/example/worker-1.0.0-linux-a
 
 Very early, experimental development. Based on appc specification ~ 0.2.0 (this will converge)
 
-Command implementation status:
+Command implementation status (this means exists at all, not finished):
 - [ ] enter    - Enter a running container.
 - [x] fetch    - Fetches an image and stores it locally.
 - [ ] gc       - Expunge spent containers.
-- [ ] list     - List containers.
+- [x] list     - List containers.
 - [ ] run      - Execute a command in a new container.
 - [ ] status   - Display the status of a container.
 - [x] validate - Validate an app container image.
@@ -62,6 +77,7 @@ Executor implementation status (list not complete):
     - [x] Cache image locally.
     - [x] Inspect image for dependencies and fetch them.
     - [ ] Overlay images' rootfs to container root file system.
+    - [ ] Bind-mount in volumes.
     - [ ] Create container context.
     - [ ] Enter container.
     - [ ] Execute.
