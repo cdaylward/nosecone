@@ -21,6 +21,7 @@
 
 #include "3rdparty/cdaylward/pathname.h"
 #include "appc/schema/image.h"
+#include "appc/os/mkdir.h"
 #include "nosecone/help.h"
 #include "nosecone/config.h"
 #include "nosecone/executor/run.h"
@@ -91,10 +92,9 @@ fetch_and_validate(const discovery::Name& name,
 
 
 int run(const discovery::Name& name, const discovery::Labels& labels) {
-  // FIXME
-  const std::string mkdir_containers = "mkdir -p -- " + config.containers_path;
-  if (system(mkdir_containers.c_str()) != 0) {
-    std::cerr << "Could not create dir for containers: " << strerror(errno) << std::endl;
+  const auto made_nosecone_root = appc::os::mkdir(config.containers_path, 0755, true);
+  if (!made_nosecone_root) {
+    std::cerr << "Could not create dir for containers: " << made_nosecone_root.message << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -116,9 +116,9 @@ int run(const discovery::Name& name, const discovery::Labels& labels) {
 
   const std::string container_home = pathname::join(config.containers_path, uuid);
   const std::string rootfs_path = pathname::join(container_home, "rootfs");
-  const std::string mkdir_container_home = "mkdir -p -- " + rootfs_path;
-  if (system(mkdir_container_home.c_str()) != 0) {
-    std::cerr << "Could not create dir for container: " << strerror(errno) << std::endl;
+  const auto made_container_root = appc::os::mkdir(rootfs_path, 0755, true);
+  if (!made_container_root) {
+    std::cerr << "Could not create dir for container: " << made_container_root.message << std::endl;
     return EXIT_FAILURE;
   }
 
