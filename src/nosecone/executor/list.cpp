@@ -20,11 +20,8 @@
 #include <string>
 #include <iostream>
 
-#include "nosecone/config.h"
+#include "3rdparty/cdaylward/pathname.h"
 #include "nosecone/executor/list.h"
-
-
-extern nosecone::Config config;
 
 
 namespace nosecone {
@@ -35,9 +32,11 @@ int list(const std::string& container_dir) {
   // This is just a stub.
   auto dir = opendir(container_dir.c_str());
   if (dir == NULL) return EXIT_FAILURE;
+  std::cout << "Container ID" << std::endl;
   for (auto entry = readdir(dir); entry != NULL; entry = readdir(dir)) {
     const std::string filename{entry->d_name};
     if (filename == "." || filename == "..") continue;
+    const std::string full_path = pathname::join(container_dir, filename);
     std::cout << filename << std::endl;
   }
   closedir(dir);
