@@ -18,6 +18,7 @@
 #include <cerrno>
 #include <algorithm>
 #include <iostream>
+#include <unistd.h>
 
 #include "3rdparty/cdaylward/pathname.h"
 #include "appc/schema/image.h"
@@ -92,6 +93,11 @@ fetch_and_validate(const discovery::Name& name,
 
 
 int run(const discovery::Name& name, const discovery::Labels& labels) {
+  if (geteuid() != 0) {
+    std::cerr << "Must be run as root." << std::endl;
+    return EXIT_FAILURE;
+  }
+
   const auto made_nosecone_root = appc::os::mkdir(config.containers_path, 0755, true);
   if (!made_nosecone_root) {
     std::cerr << "Could not create dir for containers: " << made_nosecone_root.message << std::endl;
