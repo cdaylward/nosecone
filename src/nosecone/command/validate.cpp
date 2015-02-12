@@ -27,12 +27,12 @@ namespace command {
 
 
 int perform_validate(const Arguments& args) {
-  if (args.size() < 1) {
+  if (args.ordered_args.size() < 1) {
     std::cerr << "Missing argument: <path to image>" << std::endl << std::endl;
     print_help(command::validate);
     return EXIT_FAILURE;
   }
-  const std::string filename{args[0]};
+  const std::string filename{args.ordered_args[0]};
 
   return executor::validate(filename);
 }

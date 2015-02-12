@@ -17,37 +17,38 @@
 
 #pragma once
 
-#include <cerrno>
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <sys/types.h>
-
-#include "3rdparty/cdaylward/pathname.h"
-#include "appc/util/status.h"
+#include "appc/schema/common.h"
 
 
 namespace appc {
-namespace os {
+namespace schema {
 
 
-inline Status mkdir(const std::string& dir, const mode_t mode, const bool create_parents = false) {
-  if (create_parents && !pathname::is_absolute(dir)) {
-    return Error(std::string{"Will not create parents for relative path: "} + dir);
+struct EnvironmentVariable : NameValueType<EnvironmentVariable> {
+  explicit EnvironmentVariable(const std::string& name,
+                      const std::string& value)
+  : NameValueType<EnvironmentVariable>(name, value) {}
+
+  Status validate() const {
+    // TODO
+    return Valid();
   }
-  // FIXME, use syscall, plumb mode
-  std::string mkdir_command = "mkdir ";
-  if (create_parents) {
-    mkdir_command += "-p ";
-  }
-  mkdir_command += "-- " + dir;
-  if (system(mkdir_command.c_str()) != 0) {
-    return Error(std::string{"Could not create "} + dir + ": " + strerror(errno));
-  }
-  return Success();
-}
+};
 
 
-} // namespace os
+struct Environment : ArrayType<Environment, EnvironmentVariable> {
+  explicit Environment(const std::vector<EnvironmentVariable> array)
+  : ArrayType<Environment, EnvironmentVariable>(array) {}
+
+  operator std::map<std::string, std::string>() const {
+    std::map<std::string, std::string> map;
+    for (auto& label : array) {
+      map[label.name] = label.value;
+    }
+    return map;
+  }
+};
+
+
+} // namespace schema
 } // namespace appc
-

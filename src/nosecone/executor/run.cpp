@@ -15,10 +15,8 @@
 // A (possibly updated) copy of of this software is available at
 // https://github.com/cdaylward/nosecone
 
-#include <cerrno>
 #include <algorithm>
 #include <iostream>
-#include <unistd.h>
 
 #include "3rdparty/cdaylward/pathname.h"
 #include "appc/schema/image.h"
@@ -30,6 +28,8 @@
 #include "nosecone/executor/validate.h"
 #include "nosecone/executor/image.h"
 #include "nosecone/executor/uuid.h"
+#include "nosecone/executor/container.h"
+#include "nosecone/executor/container/linux.h"
 
 
 extern nosecone::Config config;
@@ -112,6 +112,11 @@ int run(const discovery::Name& name, const discovery::Labels& labels) {
 
   auto images = from_result(images_try);
 
+  if (!images[0].manifest.app) {
+    std::cerr << "Image has no app, nothing to run." << std::endl;
+    return EXIT_FAILURE;
+  }
+
   const auto uuid_try = new_uuid();
   if (!uuid_try) {
     std::cerr << "Could not generate uuid: " << uuid_try.failure_reason() << std::endl;
@@ -122,20 +127,33 @@ int run(const discovery::Name& name, const discovery::Labels& labels) {
 
   std::cerr << "Creating container " << uuid << std::endl;
 
-  const std::string container_home = pathname::join(config.containers_path, uuid);
-  const std::string rootfs_path = pathname::join(container_home, "rootfs");
-  const auto made_container_root = appc::os::mkdir(rootfs_path, 0755, true);
-  if (!made_container_root) {
-    std::cerr << "Could not create dir for container: " << made_container_root.message << std::endl;
-    return EXIT_FAILURE;
-  }
+  const std::string container_root = pathname::join(config.containers_path, uuid);
+  auto container = container::linux::Container(uuid, container_root, images);
 
-  std::cerr << "Creating rootfs..." << std::endl;
-  for (auto& image : images) {
-    const auto extracted = image.image.extract_rootfs_to(rootfs_path);
-    if (!extracted) {
-      std::cerr << "Could not create rootfs for container: " << extracted.message << std::endl;
-      return EXIT_FAILURE;
+  container.create_rootfs();
+  // always?
+  container.create_pty();
+  auto started = container.start();
+  if (!started) {
+    std::cerr << "Could not start container: " << started.message << std::endl;
+  }
+  else {
+    if (parent_of(container)) {
+      std::cerr << "Container Started, PID: " << container.clone_pid() << std::endl;
+      // TODO if --stdout
+      char console_buffer[4096];
+      int console_master_fd = container.console_fd();
+      for (int rc = 0;
+           rc != -1;
+           rc = read(console_master_fd, console_buffer, sizeof(console_buffer) - 1)) {
+        if (rc > 0) {
+          console_buffer[rc] = '\0';
+          std::cout << console_buffer;
+        }
+      }
+
+      // TODO if --wait
+      //auto waited = await(container);
     }
   }
 

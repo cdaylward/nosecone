@@ -15,37 +15,49 @@
 // A (possibly updated) copy of of this software is available at
 // https://github.com/cdaylward/nosecone
 
-#include <unistd.h>
-#include <dirent.h>
+#pragma once
 
-#include <string>
-#include <iostream>
-
-#include "3rdparty/cdaylward/pathname.h"
-#include "nosecone/executor/list.h"
+#include <memory>
 
 
 namespace nosecone {
 namespace executor {
 
 
-int list(const std::string& container_dir) {
-  // This is just a stub.
-  auto dir = opendir(container_dir.c_str());
-  if (dir == NULL) return EXIT_FAILURE;
-  if (isatty(STDOUT_FILENO)) {
-    std::cerr << "Container ID" << std::endl;
-  }
-  for (auto entry = readdir(dir); entry != NULL; entry = readdir(dir)) {
-    const std::string filename{entry->d_name};
-    if (filename == "." || filename == "..") continue;
-    const std::string full_path = pathname::join(container_dir, filename);
-    std::cout << filename << std::endl;
-  }
-  closedir(dir);
+class AbstractContainer {
+public:
+  virtual ~AbstractContainer() {}
+  virtual Status create_rootfs() = 0;
+  virtual Status create_pty() = 0;
+  virtual Status start() = 0;
+  virtual pid_t clone_pid() const = 0;
+  virtual int console_fd() const = 0;
+};
 
-  return EXIT_SUCCESS;
-}
+
+class Container : public AbstractContainer {
+private:
+  const std::shared_ptr<AbstractContainer> impl;
+public:
+  Container(AbstractContainer* impl)
+  : impl(impl) {}
+  virtual ~Container() {}
+  virtual Status create_rootfs() {
+    return impl->create_rootfs();
+  }
+  virtual Status create_pty() {
+    return impl->create_pty();
+  }
+  virtual Status start() {
+    return impl->start();
+  }
+  virtual pid_t clone_pid() const {
+    return impl->clone_pid();
+  }
+  virtual int console_fd() const {
+    return impl->console_fd();
+  }
+};
 
 
 } // namespace executor

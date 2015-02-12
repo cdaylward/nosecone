@@ -38,19 +38,19 @@ namespace command {
 using namespace appc::discovery;
 
 
-int perform_fetch(const std::vector<std::string>& args) {
-  if (args.size() < 1) {
+int perform_fetch(const Arguments& args) {
+  if (args.ordered_args.size() < 1) {
     std::cerr << "Missing argument: <app name>" << std::endl << std::endl;
     print_help(fetch);
     return EXIT_FAILURE;
   }
 
-  const Name name{args[0]};
+  const Name name{args.ordered_args[0]};
 
   Labels labels = config.default_labels;
 
-  if (args.size() > 1) {
-    for (auto i = args.begin() + 1; i != args.end(); i++) {
+  if (args.ordered_args.size() > 1) {
+    for (auto i = args.ordered_args.begin() + 1; i != args.ordered_args.end(); i++) {
       auto& label_set = *i;
       auto delim = label_set.find(":");
       if (delim == std::string::npos ||

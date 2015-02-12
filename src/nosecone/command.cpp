@@ -15,20 +15,26 @@
 // A (possibly updated) copy of of this software is available at
 // https://github.com/cdaylward/nosecone
 
-#include <iostream>
-
 #include "nosecone/command.h"
 
 
 namespace nosecone {
-namespace command {
 
 
-int perform_gc(const Arguments& args) {
-  std::cerr << "gc not yet implemented." << std::endl;
-  return 0;
+Arguments separate_flags(const std::vector<std::string>& args) {
+  Arguments sep{};
+  bool flags_finished = false;
+  for (const auto& arg : args) {
+    if (!flags_finished && arg.find("-") == 0) {
+      sep.flags.push_back(arg.substr(1));
+    }
+    else {
+      flags_finished = true;
+      sep.ordered_args.push_back(arg);
+    }
+  }
+  return sep;
 }
 
 
-} // namespace command
 } // namespace nosecone

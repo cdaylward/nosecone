@@ -35,25 +35,19 @@ using namespace appc::discovery;
 
 
 int perform_run(const Arguments& args) {
-  if (args.size() < 1) {
+  if (args.ordered_args.size() < 1) {
     std::cerr << "Missing argument: <app name>" << std::endl << std::endl;
     print_help(command::run);
     return EXIT_FAILURE;
   }
 
-  const Name name{args[0]};
+  const Name name{args.ordered_args[0]};
 
-  // Use this set as default, required for simple discovery.
-  // These are overwritten if passed in by the user.
-  Labels labels{
-    {"os", "linux"},
-    {"version", "1.0.0"},
-    {"arch", "amd64"}
-  };
+  Labels labels = config.default_labels;
 
-  if (args.size() > 1) {
-    for (auto i = args.begin() + 1; i != args.end(); i++) {
-      auto& label_set = *i;
+  if (args.ordered_args.size() > 1) {
+    for (auto iter = args.ordered_args.begin() + 1; iter != args.ordered_args.end(); iter++) {
+      auto& label_set = *iter;
       auto delim = label_set.find(":");
       if (delim == std::string::npos ||
           delim == label_set.length() - 1) {

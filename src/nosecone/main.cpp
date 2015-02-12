@@ -17,23 +17,23 @@
 
 #include <unistd.h>
 
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 #include <tuple>
 
-#include "nosecone/config.h"
 #include "nosecone/command/enter.h"
 #include "nosecone/command/fetch.h"
-#include "nosecone/command/gc.h"
-#include "nosecone/help.h"
-#include "nosecone/command/list.h"
 #include "nosecone/command/fetch.h"
+#include "nosecone/command/gc.h"
+#include "nosecone/command/list.h"
 #include "nosecone/command/run.h"
 #include "nosecone/command/status.h"
 #include "nosecone/command/validate.h"
+#include "nosecone/config.h"
+#include "nosecone/help.h"
 
 
 using namespace nosecone;
@@ -62,21 +62,32 @@ int main(int args, char** argv)
   dispatch.register_command(nosecone::command::status);
   dispatch.register_command(nosecone::command::validate);
 
-  std::vector<std::string> arguments;
+  std::vector<std::string> argvs;
   for (int i = 1; i < args; i++) {
-    arguments.emplace_back(argv[i]);
+    argvs.emplace_back(argv[i]);
   }
 
-  if (arguments.empty()) {
+  const auto& arguments = separate_flags(argvs);
+
+  if (arguments.has_flag("help")) {
+    print_usage(dispatch.commands);
+    return EXIT_SUCCESS;
+  }
+
+  if (arguments.has_flag("v")) {
+    config.verbose = true;
+  }
+
+  if (arguments.ordered_args.empty()) {
     print_usage(dispatch.commands);
     return EXIT_FAILURE;
   }
 
-  const auto& command = arguments[0];
+  const auto& command = arguments.ordered_args[0];
 
-  if (command == "help" || command == "--help") {
-    if (arguments.size() == 2) {
-      const auto& topic = arguments[1];
+  if (command == "help") {
+    if (arguments.ordered_args.size() == 2) {
+      const auto& topic = arguments.ordered_args[1];
       if (dispatch.commands.find(topic) == dispatch.commands.end()) {
         unknown_command(topic);
         return EXIT_FAILURE;
@@ -85,7 +96,7 @@ int main(int args, char** argv)
       return EXIT_SUCCESS;
     }
     print_usage(dispatch.commands);
-    return EXIT_FAILURE;
+    return EXIT_SUCCESS;
   }
 
   if (dispatch.commands.find(command) == dispatch.commands.end()) {
@@ -93,5 +104,7 @@ int main(int args, char** argv)
     return EXIT_FAILURE;
   }
 
-  return dispatch.run(command, std::vector<std::string>{arguments.begin() + 1, arguments.end()});
+  auto command_options = separate_flags(std::vector<std::string>{arguments.ordered_args.begin() + 1,
+                                                                 arguments.ordered_args.end()});
+  return dispatch.run(command, command_options);
 }

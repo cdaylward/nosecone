@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <functional>
 #include <map>
 #include <string>
@@ -27,7 +28,16 @@ namespace nosecone {
 
 
 using Argument = std::string;
-using Arguments = std::vector<std::string>;
+using Flag = std::string;
+
+
+struct Arguments {
+  std::vector<Flag> flags;
+  std::vector<Argument> ordered_args;
+  bool has_flag(const Flag& flag) const {
+    return std::find(std::begin(flags), std::end(flags), flag) != std::end(flags);
+  }
+};
 
 
 struct Command {
@@ -51,5 +61,6 @@ struct Dispatch {
   }
 };
 
+Arguments separate_flags(const std::vector<std::string>& args);
 
 } // namespace nosecone
