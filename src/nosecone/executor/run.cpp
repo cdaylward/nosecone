@@ -114,6 +114,8 @@ int run(const discovery::Name& name, const discovery::Labels& labels) {
 
   const auto uuid = from_result(uuid_try);
 
+  std::cerr << "Creating container " << uuid << std::endl;
+
   const std::string container_home = pathname::join(config.containers_path, uuid);
   const std::string rootfs_path = pathname::join(container_home, "rootfs");
   const auto made_container_root = appc::os::mkdir(rootfs_path, 0755, true);
@@ -122,8 +124,13 @@ int run(const discovery::Name& name, const discovery::Labels& labels) {
     return EXIT_FAILURE;
   }
 
+  std::cerr << "Creating rootfs..." << std::endl;
   for (auto& image : images) {
-    image.image.extract_rootfs_to(rootfs_path);
+    const auto extracted = image.image.extract_rootfs_to(rootfs_path);
+    if (!extracted) {
+      std::cerr << "Could not create rootfs for container: " << extracted.message << std::endl;
+      return EXIT_FAILURE;
+    }
   }
 
   return EXIT_SUCCESS;
