@@ -1,24 +1,27 @@
-#include <cstdlib>
-#include <csignal>
 #include <cerrno>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sched.h>
+#include <csignal>
+#include <cstdlib>
 #include <vector>
-#include <sys/syscall.h>
-#include <sys/prctl.h>
-#include <sys/mount.h>
-#include <sys/wait.h>
-// NUKE
-#include <termios.h>
-#include <sys/types.h>
-#include <dirent.h>
 
-#include "appc/os/mkdir.h"
+#include <dirent.h>
+#include <fcntl.h>
+#include <sched.h>
+#include <sys/mount.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+// TODO decide on term attrs
+#include <termios.h>
+#include <unistd.h>
+
 #include "appc/image/image.h"
+#include "appc/os/mkdir.h"
 #include "appc/util/status.h"
+
 #include "nosecone/executor/container/linux.h"
 
+#ifdef __linux__
+#include <sys/prctl.h>
 
 namespace nosecone {
 namespace executor {
@@ -85,7 +88,6 @@ Status Container::Impl::create_rootfs() {
 }
 
 
-#ifdef __linux__
 pid_t Container::Impl::clone_pid() const {
   return pid;
 }
@@ -294,11 +296,10 @@ Status Container::Impl::start() {
   return Success("child");
 }
 
-#endif
-
 
 } // namespace linux
 } // namespace container
 } // namespace executor
 } // namespace nosecone
 
+#endif
