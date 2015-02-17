@@ -92,9 +92,26 @@ fetch_and_validate(const discovery::Name& name,
 }
 
 
-int run(const discovery::Name& name, const discovery::Labels& labels) {
+void dump_container_stdout(const Container& container) {
+  char console_buffer[4096];
+  int console_master_fd = container.console_fd();
+  for (int rc = 0;
+       rc != -1;
+       rc = read(console_master_fd, console_buffer, sizeof(console_buffer) - 1)) {
+    if (rc > 0) {
+      console_buffer[rc] = '\0';
+      std::cout << console_buffer;
+    }
+  }
+}
+
+
+int run(const discovery::Name& name,
+        const discovery::Labels& labels,
+        const bool wait_for_container,
+        const bool dump_stdout) {
   if (geteuid() != 0) {
-    std::cerr << "Must be run as root." << std::endl;
+    std::cerr << "Containers can only be started by root." << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -140,20 +157,11 @@ int run(const discovery::Name& name, const discovery::Labels& labels) {
   else {
     if (parent_of(container)) {
       std::cerr << "Container Started, PID: " << container.clone_pid() << std::endl;
-      // TODO if --stdout
-      char console_buffer[4096];
-      int console_master_fd = container.console_fd();
-      for (int rc = 0;
-           rc != -1;
-           rc = read(console_master_fd, console_buffer, sizeof(console_buffer) - 1)) {
-        if (rc > 0) {
-          console_buffer[rc] = '\0';
-          std::cout << console_buffer;
-        }
+      if (dump_stdout) {
+        dump_container_stdout(container);
+      } else if (wait_for_container) {
+        auto waited = await(container);
       }
-
-      // TODO if --wait
-      //auto waited = await(container);
     }
   }
 

@@ -60,7 +60,10 @@ int perform_run(const Arguments& args) {
     }
   }
 
-  return executor::run(name, labels);
+  const bool wait_for_container = args.has_flag("wait") ? true : false;
+  const bool dump_stdout = args.has_flag("stdout") ? true : false;
+
+  return executor::run(name, labels, wait_for_container, dump_stdout);
 }
 
 

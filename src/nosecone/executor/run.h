@@ -28,7 +28,10 @@ namespace executor {
 using namespace appc;
 
 
-int run(const discovery::Name& name, const discovery::Labels& labels);
+int run(const discovery::Name& name,
+        const discovery::Labels& labels,
+        const bool wait_for_container = false,
+        const bool dump_stdout = false);
 
 
 } // namespace executor
