@@ -27,52 +27,52 @@ reads the container's pty and writes to stdout):
 ```
 $ sudo ./bin/nscn run -stdout nosecone.net/example/test
 Resolved: nosecone.net/example/test -> file:///tmp/nosecone/images/nosecone.net/example/test-1.0.0-linux-amd64.aci
-Fetch failed: file:///tmp/nosecone/images/nosecone.net/example/test-1.0.0-linux-amd64.aci No such file or directory
-Resolved: nosecone.net/example/test -> https://nosecone.net/example/test-1.0.0-linux-amd64.aci
-Fetched: https://nosecone.net/example/test-1.0.0-linux-amd64.aci
-Location: file:///tmp/nosecone/images/nosecone.net/example/test-1.0.0-linux-amd64.aci
-test-1.0.0-linux-amd64.aci OK
+Using: file:///tmp/nosecone/images/nosecone.net/example/test-1.0.0-linux-amd64.aci
+Validated: test-1.0.0-linux-amd64.aci OK
 Dependency: nosecone.net/example/test requires nosecone.net/example/tinycentos7
 Resolved: nosecone.net/example/tinycentos7 -> file:///tmp/nosecone/images/nosecone.net/example/tinycentos7-1.0.0-linux-amd64.aci
-Fetch failed: file:///tmp/nosecone/images/nosecone.net/example/tinycentos7-1.0.0-linux-amd64.aci No such file or directory
-Resolved: nosecone.net/example/tinycentos7 -> https://nosecone.net/example/tinycentos7-1.0.0-linux-amd64.aci
-Fetched: https://nosecone.net/example/tinycentos7-1.0.0-linux-amd64.aci
-Location: file:///tmp/nosecone/images/nosecone.net/example/tinycentos7-1.0.0-linux-amd64.aci
-tinycentos7-1.0.0-linux-amd64.aci OK
-Creating container 8ecd98b1-6da8-46c4-b433-93bae3893ec4
-Creating rootfs: /tmp/nosecone/containers/8ecd98b1-6da8-46c4-b433-93bae3893ec4/rootfs
-Container Started, PID: 6949
+Using: file:///tmp/nosecone/images/nosecone.net/example/tinycentos7-1.0.0-linux-amd64.aci
+Validated: tinycentos7-1.0.0-linux-amd64.aci OK
+Container ID: 08f2d475-cf46-4398-a820-ddcd9e59ba0e
+Created root file system: /tmp/nosecone/containers/08f2d475-cf46-4398-a820-ddcd9e59ba0e/rootfs
+Container started, PID: 9238
+--- 8< ---
 Hello World!
 ---
-1705488    4 drwxrwxr-x   9 0        0            4096 Feb 17 08:01 /
+1706857    4 drwxrwxr-x   9 0        0            4096 Feb 17 18:59 /
       1    0 dr-xr-xr-x  13 0        0               0 Nov  2 01:31 /sys
-1705493    4 drwxrwxr-x   2 0        0            4096 Feb 13 21:34 /lib64
-2376077    0 drwxr-xr-x   3 0        0             120 Feb 17 08:01 /dev
-1705489    4 drwxrwxr-x   6 0        0            4096 Feb 17 08:01 /usr
-1705552    4 drwxrwxr-x   2 0        0            4096 Feb 16 23:50 /etc
-      1    0 dr-xr-xr-x 106 0        0               0 Feb 17 08:01 /proc
-1705565    0 -rw-r--r--   1 500      500             0 Feb 17 08:01 /hello_world
-1705553    4 drwxrwxr-x   2 0        0            4096 Feb 13 06:52 /bin
+1706862    4 drwxrwxr-x   2 0        0            4096 Feb 13 21:34 /lib64
+2383636    0 drwxr-xr-x   3 0        0             120 Feb 17 18:59 /dev
+1706858    4 drwxrwxr-x   6 0        0            4096 Feb 17 18:59 /usr
+1706921    4 drwxrwxr-x   2 0        0            4096 Feb 16 23:50 /etc
+      1    0 dr-xr-xr-x 107 0        0               0 Feb 17 18:59 /proc
+1706934    0 -rw-r--r--   1 500      500             0 Feb 17 18:59 /hello_world
+1706922    4 drwxrwxr-x   2 0        0            4096 Feb 13 06:52 /bin
 ---
 uid=500 gid=500 groups=0
 ---
+TERM=xterm-256color
 SHELL=/bin/bash
 WE_ARE_TESTING=true
+USER=500
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 PWD=/
 SHLVL=1
+HOME=/
+LOGNAME=500
 _=/usr/bin/env
 ---
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-500          1  0.0  0.1   9512  2520 pts/2    Ss+  08:01   0:00 /bin/bash /usr/local/bin/test
-500         16  0.0  0.0  17648   644 pts/2    R+   08:01   0:00 /bin/ps axufw
+500          1  0.0  0.1   9512  2576 pts/3    Ss+  18:59   0:00 /bin/bash /usr/local/bin/test
+500         16  0.0  0.0  17648   636 pts/3    R+   18:59   0:00 /bin/ps axufw
+
 
 $ ./bin/nscn list
 Container ID
-137eb111-77ab-44a3-9a14-e45bc1e4557c
 c0bd7e2c-b64b-4212-966d-9044b2a52f2b
 41472f9b-f669-4b91-875f-3fde7bdf21ee
 8ecd98b1-6da8-46c4-b433-93bae3893ec4
+08f2d475-cf46-4398-a820-ddcd9e59ba0e
 ```
 
 ## Status
