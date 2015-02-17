@@ -35,7 +35,7 @@ const Command run{
   "  -wait   - Wait for the container to terminate.\n"
   "  -stdout - Dump container's pseudo-terminal to STDOUT (implies -wait)\n\n"
   "Terminating nscn when waiting (Ctrl-C with -wait or -stdout) does not affect the container.\n"
-  "version, os, and arch labels default to 1.0.0, linux, and amd64 respectively.\n",
+  "version, os, and arch labels default to 1.0.0, linux, and amd64 respectively.",
   perform_run
 };
 
