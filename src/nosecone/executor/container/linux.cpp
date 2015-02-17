@@ -200,10 +200,12 @@ Status Container::Impl::start() {
     return Errno("Failed to create new session: ", errno);
   }
 
+  // TODO test
   ioctl(0, TIOCSCTTY, 1);
-  // Set PDEATHSIG?
 
-  // Remount / as slave (so we don't pollute mounts but receive host)
+  // TODO Set PDEATHSIG?
+
+  // Remount / as slave (so we don't pollute mounts but receive host's)
   if (mount(NULL, "/", NULL, MS_SLAVE|MS_REC, NULL) != 0) {
     return Errno("Failed to mount / as slave: ", errno);
   }
@@ -211,7 +213,6 @@ Status Container::Impl::start() {
     return Errno("Failed to bind mount rootfs: ", errno);
   }
 
-  // TODO test status of these.
   auto proc_dir = pathname::join(rootfs_path, "proc");
   appc::os::mkdir(proc_dir, 0755, true);
   if (mount("proc", proc_dir.c_str(), "proc",  MS_NOSUID|MS_NOEXEC|MS_NODEV, NULL) != 0) {
@@ -220,24 +221,35 @@ Status Container::Impl::start() {
 
   auto proc_sys_dir = pathname::join(rootfs_path, "proc", "sys");
   appc::os::mkdir(proc_sys_dir, 0755, true);
-  mount("/proc/sys", proc_sys_dir.c_str(), NULL, MS_BIND, NULL);
-  mount(NULL, proc_sys_dir.c_str(), NULL, MS_BIND|MS_RDONLY|MS_REMOUNT, NULL);
+  if (mount("/proc/sys", proc_sys_dir.c_str(), NULL, MS_BIND, NULL)) {
+    return Errno("Failed to bind mount /proc/sys: ", errno);
+  }
+  if (mount(NULL, proc_sys_dir.c_str(), NULL, MS_BIND|MS_RDONLY|MS_REMOUNT, NULL)) {
+    return Errno("Failed to remount /proc/sys read-only: ", errno);
+  }
 
   auto sys_dir = pathname::join(rootfs_path, "sys");
   appc::os::mkdir(sys_dir, 0755, true);
-  mount("sysfs", sys_dir.c_str(), "sysfs", MS_RDONLY|MS_NOSUID|MS_NOEXEC|MS_NODEV, NULL);
+  if (mount("sysfs", sys_dir.c_str(), "sysfs", MS_RDONLY|MS_NOSUID|MS_NOEXEC|MS_NODEV, NULL)) {
+    return Errno("Failed to mount sysfs /sys: ", errno);
+  }
 
   auto dev_dir = pathname::join(rootfs_path, "dev");
   appc::os::mkdir(dev_dir, 0755, true);
-  mount("tmpfs", dev_dir.c_str(), "tmpfs", MS_NOSUID|MS_STRICTATIME, "mode=755");
+  if (mount("tmpfs", dev_dir.c_str(), "tmpfs", MS_NOSUID|MS_STRICTATIME, "mode=755")) {
+    return Errno("Failed to mount tmpfs /dev: ", errno);
+  }
 
   auto pts_dir = pathname::join(rootfs_path, "dev", "pts");
   appc::os::mkdir(pts_dir, 0755, true);
-  mount("devpts", pts_dir.c_str(), "devpts", MS_NOSUID|MS_NOEXEC, NULL);
+  if (mount("devpts", pts_dir.c_str(), "devpts", MS_NOSUID|MS_NOEXEC, NULL)) {
+    return Errno("Failed to mount devpts /dev/pts: ", errno);
+  }
 
   auto new_stdin = pathname::join(rootfs_path, "dev", "stdin");
   auto new_stdout = pathname::join(rootfs_path, "dev", "stdout");
   auto new_stderr = pathname::join(rootfs_path, "dev", "stderr");
+  // TODO Test status
   symlink("/proc/self/fd/0", new_stdin.c_str());
   symlink("/proc/self/fd/1", new_stdout.c_str());
   symlink("/proc/self/fd/2", new_stderr.c_str());
