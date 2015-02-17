@@ -1,3 +1,20 @@
+// Copyright 2015 Charles D. Aylward
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// A (possibly updated) copy of of this software is available at
+// https://github.com/cdaylward/nosecone
+
 #include <cerrno>
 #include <csignal>
 #include <cstdlib>
@@ -69,7 +86,6 @@ inline char** c_array(const appc::schema::Exec& exec) {
 
 
 Status Container::Impl::create_rootfs() {
-  std::cerr << "Creating rootfs: " << rootfs_path << std::endl;
   const auto made_container_root = appc::os::mkdir(rootfs_path, 0755, true);
   if (!made_container_root) {
     std::string where{"Could not create directory for container: "};
@@ -79,10 +95,12 @@ Status Container::Impl::create_rootfs() {
   for (auto& image : images) {
     auto extracted = image.image.extract_rootfs_to(rootfs_path);
     if (!extracted) {
-      std::string where{"Could not create rootfs for container: "};
+      std::string where{"Could not create root file system for container: "};
       return Error(where + extracted.message);
     }
   }
+
+  std::cerr << "Created root file system: " << rootfs_path << std::endl;
 
   return Success();
 }
@@ -185,7 +203,7 @@ Status Container::Impl::start() {
   ioctl(0, TIOCSCTTY, 1);
   // Set PDEATHSIG?
 
-  // Remount / as slave
+  // Remount / as slave (so we don't pollute mounts but receive host)
   if (mount(NULL, "/", NULL, MS_SLAVE|MS_REC, NULL) != 0) {
     return Errno("Failed to mount / as slave: ", errno);
   }
@@ -193,7 +211,7 @@ Status Container::Impl::start() {
     return Errno("Failed to bind mount rootfs: ", errno);
   }
 
-  // TODO test status
+  // TODO test status of these.
   auto proc_dir = pathname::join(rootfs_path, "proc");
   appc::os::mkdir(proc_dir, 0755, true);
   if (mount("proc", proc_dir.c_str(), "proc",  MS_NOSUID|MS_NOEXEC|MS_NODEV, NULL) != 0) {
@@ -273,11 +291,15 @@ Status Container::Impl::start() {
   }
 
   std::map<std::string, std::string> environment{};
-  environment["USER"] = app.user.value;
+  environment["HOME"] = "/"; // TODO
   environment["LOGNAME"] = app.user.value;
   environment["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
-  environment["HOME"] = "/"; // TODO
   environment["SHELL"] = "/bin/bash"; // TODO
+  environment["USER"] = app.user.value;
+  char* term_type = getenv("TERM");
+  if (term_type != NULL) {
+    environment["TERM"] = term_type;
+  }
   if (app.environment) {
     for (const auto& pair : from_some(app.environment)) {
       environment[pair.name] = pair.value;

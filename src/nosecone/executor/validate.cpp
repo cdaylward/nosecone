@@ -45,6 +45,8 @@ int validate(const std::string& filename) {
     return EXIT_FAILURE;
   }
 
+  std::cerr << pathname::base(filename) << " OK" << std::endl;
+
   return EXIT_SUCCESS;
 }
 
@@ -90,8 +92,6 @@ Try<Image> get_validated_image(const std::string& filename) {
     return Failure<Image>(
         std::string{"Manifest is invalid: "} + valid.message);
   }
-
-  std::cerr << pathname::base(filename) << " OK" << std::endl;
 
   return Result(Image{image, from_result(manifest)});
 }

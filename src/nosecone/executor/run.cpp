@@ -63,6 +63,8 @@ fetch_and_validate(const discovery::Name& name,
 
   auto valid_image = from_result(valid_image_try);
 
+  std::cerr << "Validated: " << pathname::base(image_path) << " OK" << std::endl;
+
   dependencies.push_back(valid_image);
 
   // TODO is depth-first ok?
@@ -142,7 +144,7 @@ int run(const discovery::Name& name,
 
   const auto uuid = from_result(uuid_try);
 
-  std::cerr << "Creating container " << uuid << std::endl;
+  std::cerr << "Container ID: " << uuid << std::endl;
 
   const std::string container_root = pathname::join(config.containers_path, uuid);
   auto container = container::linux::Container(uuid, container_root, images);
@@ -156,8 +158,9 @@ int run(const discovery::Name& name,
   }
   else {
     if (parent_of(container)) {
-      std::cerr << "Container Started, PID: " << container.clone_pid() << std::endl;
+      std::cerr << "Container started, PID: " << container.clone_pid() << std::endl;
       if (dump_stdout) {
+        std::cerr << "--- 8< ---" << std::endl;
         dump_container_stdout(container);
       } else if (wait_for_container) {
         auto waited = await(container);
