@@ -56,8 +56,8 @@ inline char** c_env_array(const std::map<std::string, std::string>& environment)
   char** environment_array = static_cast<char**>(calloc(env_size, sizeof(char*)));
   off_t i = 0;
   for (const auto& pair : environment) {
-    auto assignment = pair.first + "=" + pair.second;
-    environment_array[i++] = const_cast<char*>(assignment.c_str());
+    const auto assignment = pair.first + "=" + pair.second;
+    environment_array[i++] = strdup(const_cast<char*>(assignment.c_str()));
   }
   environment_array[i] = NULL;
   return environment_array;
@@ -69,7 +69,7 @@ inline char** c_array(const std::vector<std::string>& strings) {
   char** array = static_cast<char**>(calloc(array_size, sizeof(char*)));
   off_t i = 0;
   for (const auto& str : strings) {
-    array[i++] = const_cast<char*>(str.c_str());
+    array[i++] = strdup(const_cast<char*>(str.c_str()));
   }
   array[i] = NULL;
   return array;
