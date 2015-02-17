@@ -17,7 +17,6 @@ find_library(LIB_Z NAMES z)
 find_library(LIB_CURL NAMES curl PATHS ${3RDPARTY_USR}/lib)
 find_library(LIB_ARCHIVE NAMES archive PATHS ${3RDPARTY_USR}/lib)
 
-
 file(GLOB NSCN_SOURCES
   src/nosecone/executor/container/*.cpp
   src/nosecone/executor/*.cpp
@@ -27,3 +26,4 @@ file(GLOB NSCN_SOURCES
 add_executable(nscn ${NSCN_SOURCES})
 target_link_libraries(nscn ${LIB_ARCHIVE} ${LIB_CURL} ${LIB_CRYPTO} ${LIB_LZMA} ${LIB_BZ2} ${LIB_Z})
 
+add_dependencies(nscn _get_libarchive _get_libcurl)
