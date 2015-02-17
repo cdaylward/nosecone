@@ -13,7 +13,7 @@ ExternalProject_add(_get_libarchive
   URL http://www.libarchive.org/downloads/libarchive-3.1.2.tar.gz
   URL_HASH SHA1=6a991777ecb0f890be931cec4aec856d1a195489
   SOURCE_DIR ${LIBARCHIVE_DIR}
-  CONFIGURE_COMMAND ./configure --prefix=${3RDPARTY_USR}
+  CONFIGURE_COMMAND ./configure --prefix=${3RDPARTY_USR} --without-iconv --without-xml2 --without-expat
   BUILD_COMMAND make all
   BUILD_IN_SOURCE 1
   TEST_COMMAND ""
