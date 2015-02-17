@@ -127,7 +127,6 @@ Status Container::Impl::create_pty() {
     Errno("Failed to determine tty name: ", errno);
   }
   console_slave_name = std::string{slave_buff};
-  std::cerr << "Slave PTY: " << console_slave_name << std::endl;
 
   if (grantpt(console_master_fd) != 0) {
     Errno("Failed to change tty owner: ", errno);
