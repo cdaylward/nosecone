@@ -29,6 +29,8 @@
 #include "3rdparty/cdaylward/pathname.h"
 #include "3rdparty/nlohmann/json.h"
 
+#include "appc/util/try.h"
+
 #include "nosecone/config.h"
 #include "nosecone/command/list.h"
 
@@ -42,13 +44,17 @@ namespace command {
 
 using Json = nlohmann::json;
 
+struct ContainerStatus {
+  const std::string id;
+  const time_t created_time;
+  const bool has_pty;
+  const pid_t pid;
+  const bool running;
+};
 
 static Json container_info(const std::string& container_root) {
   const auto info_file = pathname::join(container_root, "info");
   Json json{};
-  json["has_pty"] = "N/A";
-  json["id"] = "N/A";
-  json["pid"] = "N/A";
   std::ifstream info(info_file);
   if (info) {
     info >> json;
@@ -57,38 +63,85 @@ static Json container_info(const std::string& container_root) {
   return json;
 }
 
+static Try<ContainerStatus> container_status(const Json& info) {
+  if (info.find("id") == info.end() ||
+      info.find("created") == info.end() ||
+      info.find("has_pty") == info.end() ||
+      info.find("pid") == info.end()) {
+    return Failure<ContainerStatus>("Container info JSON missing fields.");
+  }
+  const std::string id = info["id"];
+  const time_t created_time = info["created"];
+  const bool has_pty = info["has_pty"];
+  pid_t pid = info["pid"];
+  struct stat proc_stat;
+  const auto cmdline_filename = pathname::join("/proc", std::to_string(pid), "cmdline");
+  // TODO Need another key besides PID existence to limit collisions.
+  const bool running = stat(cmdline_filename.c_str(), &proc_stat) == 0;
+
+  return Result(ContainerStatus{id, created_time, has_pty, pid, running});
+}
+
 
 int perform_list(const Arguments& args) {
+  // TODO stub, clean up.
   auto dir = opendir(config.containers_path.c_str());
   if (dir == NULL) return EXIT_FAILURE;
   // TODO probably passe
   if (isatty(STDOUT_FILENO)) {
     std::cerr << std::left;
     std::cerr << std::setw(39) << "Container ID";
-    std::cerr << std::setw(30) << "Created Date";
+    std::cerr << std::setw(24) << "Created Date";
     std::cerr << std::setw(8) << "PID";
-    std::cerr << std::setw(8) << "Has PTY" << std::endl;
+    std::cerr << std::setw(8) << "Has PTY";
+    std::cerr << std::setw(6) << "Status" << std::endl;
   }
   for (auto entry = readdir(dir); entry != NULL; entry = readdir(dir)) {
     const std::string filename{entry->d_name};
     if (filename == "." || filename == "..") continue;
     const std::string full_path = pathname::join(config.containers_path, filename);
     const auto info = container_info(full_path);
+    const auto status = container_status(info);
+
     std::cout << std::left;
     std::cout << std::setw(39) << filename;
-    std::cout << std::setw(30);
-    if (info.find("created") != info.end()) {
-      const time_t created_time = info["created"];
+
+    std::cout << std::setw(24);
+    if (status) {
+      const auto created_time = from_result(status).created_time;
       char time[100];
-      strftime(time, 99, "%Y-%m-%dT%H:%M:%S.000000Z", localtime(&created_time));
+      strftime(time, 99, "%Y-%m-%dT%H:%M:%S.0Z", gmtime(&created_time));
       std::cout << time;
     }
     else {
       std::cout << "N/A";
     }
-    std::cout << std::right;
-    std::cout << std::setw(7) << info["pid"] << " ";
-    std::cout << std::setw(7) << info["has_pty"] << std::endl;
+
+    std::cout << std::right << std::setw(7);
+    if (status) {
+      const auto pid = from_result(status).pid;
+      std::cout << pid;
+    } else {
+      std::cout << "N/A";
+    }
+    std::cout << " " << std::setw(7);
+
+    if (status) {
+      const auto has_pty = from_result(status).has_pty;
+      std::cout << std::boolalpha << has_pty;
+    } else {
+      std::cout << "N/A";
+    }
+
+    std::cout << " ";
+    if (status) {
+      const auto running = from_result(status).running;
+      std::cout << (running ? "RUNNING" : "EXITED");
+    } else {
+      std::cout << "N/A";
+    }
+
+    std::cout << std::endl;
   }
   closedir(dir);
 
