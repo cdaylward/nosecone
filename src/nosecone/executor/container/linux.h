@@ -36,9 +36,10 @@ private:
     const std::string container_root_path;
     const std::string rootfs_path;
     std::vector<Image> images;
-    int console_master_fd;
-    std::string console_slave_name;
-    pid_t pid;
+    bool has_pty;
+    int pty_master_fd;
+    std::string pty_slave_name;
+    pid_t clone_pid;
   public:
     Impl(const std::string& uuid,
          const std::string& container_root_path,
@@ -47,14 +48,15 @@ private:
       container_root_path(container_root_path),
       rootfs_path(pathname::join(container_root_path, "rootfs")),
       images(images),
-      console_master_fd(-1),
-      console_slave_name(""),
-      pid(-1) {}
+      has_pty(false),
+      pty_master_fd(-1),
+      pty_slave_name(""),
+      clone_pid(-1) {}
     virtual Status create_rootfs();
     virtual Status create_pty();
     virtual Status start();
-    virtual pid_t clone_pid() const;
-    virtual int console_fd() const;
+    virtual pid_t pid() const;
+    virtual int pty_fd() const;
   };
 public:
   Container(const std::string& uuid,

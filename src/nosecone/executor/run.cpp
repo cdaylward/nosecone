@@ -95,14 +95,14 @@ fetch_and_validate(const discovery::Name& name,
 
 
 void dump_container_stdout(const Container& container) {
-  char console_buffer[4096];
-  int console_master_fd = container.console_fd();
+  const int pty_master_fd = container.pty_fd();
+  char pty_buffer[4096];
   for (int rc = 0;
        rc != -1;
-       rc = read(console_master_fd, console_buffer, sizeof(console_buffer) - 1)) {
+       rc = read(pty_master_fd, pty_buffer, sizeof(pty_buffer) - 1)) {
     if (rc > 0) {
-      console_buffer[rc] = '\0';
-      std::cout << console_buffer;
+      pty_buffer[rc] = '\0';
+      std::cout << pty_buffer;
     }
   }
 }
@@ -158,7 +158,7 @@ int run(const discovery::Name& name,
   }
   else {
     if (parent_of(container)) {
-      std::cerr << "Container started, PID: " << container.clone_pid() << std::endl;
+      std::cerr << "Container started, PID: " << container.pid() << std::endl;
       if (dump_stdout) {
         std::cerr << "--- 8< ---" << std::endl;
         dump_container_stdout(container);

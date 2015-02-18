@@ -106,23 +106,23 @@ Status Container::Impl::create_rootfs() {
 }
 
 
-pid_t Container::Impl::clone_pid() const {
-  return pid;
+pid_t Container::Impl::pid() const {
+  return clone_pid;
 }
 
 
-int Container::Impl::console_fd() const {
-  return console_master_fd;
+int Container::Impl::pty_fd() const {
+  return pty_master_fd;
 }
 
 
 Status await(const Container& container) {
-  const pid_t pid = container.clone_pid();
+  const pid_t pid = container.pid();
   if (pid == 0) {
     return Error("Cannot call wait from within container.");
   }
   if (waitpid(pid, NULL, __WALL) == -1) {
-    return Errno("Could not wait on clone: ", errno);
+    return Errno("Could not wait on container: ", errno);
   }
 
   return Success();
@@ -130,29 +130,31 @@ Status await(const Container& container) {
 
 
 bool parent_of(const Container& container) {
-  return container.clone_pid() > 0;
+  return container.pid() > 0;
 }
 
 
 Status Container::Impl::create_pty() {
-  console_master_fd = posix_openpt(O_RDWR|O_NOCTTY|O_CLOEXEC);
-  if (console_master_fd < 0) {
+  pty_master_fd = posix_openpt(O_RDWR|O_NOCTTY|O_CLOEXEC);
+  if (pty_master_fd < 0) {
     Errno("Could not create pseudoterminal for container: ", errno);
   }
 
   char slave_buff[100];
-  if (ptsname_r(console_master_fd, slave_buff, sizeof(slave_buff) - 1 ) != 0) {
+  if (ptsname_r(pty_master_fd, slave_buff, sizeof(slave_buff) - 1 ) != 0) {
     Errno("Failed to determine tty name: ", errno);
   }
-  console_slave_name = std::string{slave_buff};
+  pty_slave_name = std::string{slave_buff};
 
-  if (grantpt(console_master_fd) != 0) {
+  if (grantpt(pty_master_fd) != 0) {
     Errno("Failed to change tty owner: ", errno);
   }
 
-  if (unlockpt(console_master_fd) != 0) {
+  if (unlockpt(pty_master_fd) != 0) {
     Errno("Failed to unlock tty: ", errno);
   }
+
+  has_pty = true;
 
   return Success();
 }
@@ -171,28 +173,28 @@ Status Container::Impl::start() {
                      CLONE_NEWNS;
   // CLONE_NEWNET? O_o
   // No signal is sent to parent.
-  pid = syscall(__NR_clone, clone_flags, NULL);
-  if (pid == -1) {
+  clone_pid = syscall(__NR_clone, clone_flags, NULL);
+  if (clone_pid == -1) {
     return Errno("Failed to clone: ", errno);
   }
-  if (pid > 0) return Success("parent");
+  if (clone_pid > 0) return Success("parent");
 
-  if (console_master_fd > STDERR_FILENO) {
-    close(console_master_fd);
+  if (has_pty) {
+    close(pty_master_fd);
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
-    auto console_slave_fd = open(console_slave_name.c_str(), O_RDWR);
-    if (console_slave_fd == -1) {
+    auto pty_slave_fd = open(pty_slave_name.c_str(), O_RDWR);
+    if (pty_slave_fd == -1) {
       return Errno("Could not open terminal: ", errno);
     }
-    if (console_slave_fd != 0) {
+    if (pty_slave_fd != 0) {
       return Errno("Extraneous file handles open when creating terminal: ", errno);
     }
     dup2(STDIN_FILENO, STDOUT_FILENO);
     dup2(STDIN_FILENO, STDERR_FILENO);
-    if (console_slave_fd > STDERR_FILENO) {
-      close(console_slave_fd);
+    if (pty_slave_fd > STDERR_FILENO) {
+      close(pty_slave_fd);
     }
   }
 
@@ -304,7 +306,7 @@ Status Container::Impl::start() {
 
   std::map<std::string, std::string> environment{};
   environment["HOME"] = "/"; // TODO
-  environment["LOGNAME"] = app.user.value;
+  environment["LOGNAME"] = app.user.value; // TODO
   environment["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
   environment["SHELL"] = "/bin/bash"; // TODO
   environment["USER"] = app.user.value;

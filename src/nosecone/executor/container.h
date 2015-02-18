@@ -30,8 +30,8 @@ public:
   virtual Status create_rootfs() = 0;
   virtual Status create_pty() = 0;
   virtual Status start() = 0;
-  virtual pid_t clone_pid() const = 0;
-  virtual int console_fd() const = 0;
+  virtual pid_t pid() const = 0;
+  virtual int pty_fd() const = 0;
 };
 
 
@@ -51,11 +51,11 @@ public:
   virtual Status start() {
     return impl->start();
   }
-  virtual pid_t clone_pid() const {
-    return impl->clone_pid();
+  virtual pid_t pid() const {
+    return impl->pid();
   }
-  virtual int console_fd() const {
-    return impl->console_fd();
+  virtual int pty_fd() const {
+    return impl->pty_fd();
   }
 };
 
