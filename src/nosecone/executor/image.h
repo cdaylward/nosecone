@@ -31,5 +31,8 @@ struct Image {
 };
 
 
+using Images = std::vector<Image>;
+
+
 } // namespace executor
 } // namespace nosecone

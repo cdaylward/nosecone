@@ -43,7 +43,6 @@ namespace executor {
 
 
 using Json = nlohmann::json;
-using Images = std::vector<Image>;
 
 
 Try<Images>
