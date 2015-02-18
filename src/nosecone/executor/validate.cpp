@@ -18,9 +18,12 @@
 #include <iostream>
 
 #include "3rdparty/cdaylward/pathname.h"
+
 #include "appc/image/image.h"
 #include "appc/schema/image.h"
+#include "appc/util/status.h"
 #include "appc/util/try.h"
+
 #include "nosecone/executor/validate.h"
 #include "nosecone/executor/image.h"
 
@@ -29,22 +32,16 @@ namespace nosecone {
 namespace executor {
 
 
-int validate(const std::string& filename) {
+Status validate(const std::string& filename) {
   auto valid_structure = validate_structure(filename);
-  if (!valid_structure) {
-    std::cerr << valid_structure.message << std::endl;
-    return EXIT_FAILURE;
-  }
+  if (!valid_structure) return valid_structure;
 
   auto manifest = get_validated_image(filename);
   if (!manifest) {
-    std::cerr << manifest.failure_reason() << std::endl;
-    return EXIT_FAILURE;
+    return Error(manifest.failure_reason());
   }
 
-  std::cerr << pathname::base(filename) << " OK" << std::endl;
-
-  return EXIT_SUCCESS;
+  return Success();
 }
 
 

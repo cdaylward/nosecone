@@ -34,7 +34,14 @@ int perform_validate(const Arguments& args) {
   }
   const std::string filename{args.ordered_args[0]};
 
-  return executor::validate(filename);
+  auto valid =  executor::validate(filename);
+  if (valid) {
+    std::cerr << pathname::base(filename) << " OK" << std::endl;
+    return EXIT_SUCCESS;
+  }
+
+  std::cerr << pathname::base(filename) << " NOT OK " << valid.message << std::endl;
+  return EXIT_FAILURE;
 }
 
 
