@@ -16,9 +16,12 @@
 // https://github.com/cdaylward/nosecone
 
 #include <algorithm>
+#include <chrono>
+#include <fstream>
 #include <iostream>
 
 #include "3rdparty/cdaylward/pathname.h"
+#include "3rdparty/nlohmann/json.h"
 #include "appc/schema/image.h"
 #include "appc/os/mkdir.h"
 #include "nosecone/help.h"
@@ -39,6 +42,7 @@ namespace nosecone {
 namespace executor {
 
 
+using Json = nlohmann::json;
 using Images = std::vector<Image>;
 
 
@@ -90,6 +94,17 @@ fetch_and_validate(const appc::discovery::Name& name,
   return Result(dependencies);
 }
 
+Json to_json(const Container& container) {
+  Json json{};
+  // TODO Move to container start time, not to_json time.
+  using clock = std::chrono::system_clock;
+  json["created"] = std::chrono::duration_cast<std::chrono::milliseconds>(
+      clock::now().time_since_epoch()).count();
+  json["id"] = container.id();
+  json["pid"] = container.pid();
+  json["has_pty"] = container.has_pty();
+  return json;
+}
 
 void dump_container_stdout(const Container& container) {
   const int pty_master_fd = container.pty_fd();
@@ -152,16 +167,26 @@ int run(const appc::discovery::Name& name,
   auto started = container.start();
   if (!started) {
     std::cerr << "Could not start container: " << started.message << std::endl;
+    return EXIT_FAILURE;
   }
-  else {
-    if (parent_of(container)) {
-      std::cerr << "Container started, PID: " << container.pid() << std::endl;
-      if (dump_stdout) {
-        std::cerr << "--- 8< ---" << std::endl;
-        dump_container_stdout(container);
-      } else if (wait_for_container) {
-        auto waited = await(container);
-      }
+
+  // REM we are potentially cloned (forked) here, so check that we are the parent of the
+  // container before doing parent things.
+  if (parent_of(container)) {
+    std::cerr << "Container started, PID: " << container.pid() << std::endl;
+    // TODO move this to container.start...probably.
+    auto info_json = to_json(container);
+    const auto container_info_file = pathname::join(container_root, "info");
+    std::ofstream info(container_info_file);
+    if (info) {
+      info << info_json.dump(4) << std::endl;
+      info.close();
+    }
+    if (dump_stdout) {
+      std::cerr << "--- 8< ---" << std::endl;
+      dump_container_stdout(container);
+    } else if (wait_for_container) {
+      auto waited = await(container);
     }
   }
 

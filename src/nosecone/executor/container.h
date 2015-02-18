@@ -30,7 +30,9 @@ public:
   virtual Status create_rootfs() = 0;
   virtual Status create_pty() = 0;
   virtual Status start() = 0;
+  virtual std::string id() const = 0;
   virtual pid_t pid() const = 0;
+  virtual bool has_pty() const = 0;
   virtual int pty_fd() const = 0;
 };
 
@@ -51,8 +53,14 @@ public:
   virtual Status start() {
     return impl->start();
   }
+  virtual std::string id() const {
+    return impl->id();
+  }
   virtual pid_t pid() const {
     return impl->pid();
+  }
+  virtual bool has_pty() const {
+    return impl->has_pty();
   }
   virtual int pty_fd() const {
     return impl->pty_fd();

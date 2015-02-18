@@ -36,7 +36,7 @@ private:
     const std::string container_root_path;
     const std::string rootfs_path;
     std::vector<Image> images;
-    bool has_pty;
+    bool pty_created;
     int pty_master_fd;
     std::string pty_slave_name;
     pid_t clone_pid;
@@ -48,14 +48,16 @@ private:
       container_root_path(container_root_path),
       rootfs_path(pathname::join(container_root_path, "rootfs")),
       images(images),
-      has_pty(false),
+      pty_created(false),
       pty_master_fd(-1),
       pty_slave_name(""),
       clone_pid(-1) {}
     virtual Status create_rootfs();
     virtual Status create_pty();
     virtual Status start();
+    virtual std::string id() const;
     virtual pid_t pid() const;
+    virtual bool has_pty() const;
     virtual int pty_fd() const;
   };
 public:

@@ -106,10 +106,19 @@ Status Container::Impl::create_rootfs() {
 }
 
 
+std::string Container::Impl::id() const {
+  return uuid;
+}
+
+
 pid_t Container::Impl::pid() const {
   return clone_pid;
 }
 
+
+bool Container::Impl::has_pty() const {
+  return pty_created;
+}
 
 int Container::Impl::pty_fd() const {
   return pty_master_fd;
@@ -154,7 +163,7 @@ Status Container::Impl::create_pty() {
     Errno("Failed to unlock tty: ", errno);
   }
 
-  has_pty = true;
+  pty_created = true;
 
   return Success();
 }
@@ -179,7 +188,7 @@ Status Container::Impl::start() {
   }
   if (clone_pid > 0) return Success("parent");
 
-  if (has_pty) {
+  if (pty_created) {
     close(pty_master_fd);
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
