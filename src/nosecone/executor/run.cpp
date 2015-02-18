@@ -39,15 +39,12 @@ namespace nosecone {
 namespace executor {
 
 
-using namespace appc;
-
-
 using Images = std::vector<Image>;
 
 
 Try<Images>
-fetch_and_validate(const discovery::Name& name,
-                   const discovery::Labels& labels,
+fetch_and_validate(const appc::discovery::Name& name,
+                   const appc::discovery::Labels& labels,
                    const bool with_dependencies = false,
                    Images dependencies = Images{}) {
   auto image_uri = fetch(name, labels);
@@ -108,8 +105,8 @@ void dump_container_stdout(const Container& container) {
 }
 
 
-int run(const discovery::Name& name,
-        const discovery::Labels& labels,
+int run(const appc::discovery::Name& name,
+        const appc::discovery::Labels& labels,
         const bool wait_for_container,
         const bool dump_stdout) {
   if (geteuid() != 0) {

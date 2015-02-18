@@ -29,9 +29,6 @@ namespace nosecone {
 namespace executor {
 
 
-using namespace appc;
-
-
 int validate(const std::string& filename) {
   auto valid_structure = validate_structure(filename);
   if (!valid_structure) {
@@ -52,7 +49,7 @@ int validate(const std::string& filename) {
 
 
 Status validate_structure(const std::string& filename) {
-  image::Image image{filename};
+  appc::image::Image image{filename};
 
   auto valid_structure = image.validate_structure();
   if (!valid_structure) {
@@ -66,7 +63,7 @@ Status validate_structure(const std::string& filename) {
 Try<Image> get_validated_image(const std::string& filename) {
   using Json = appc::schema::Json;
 
-  image::Image image{filename};
+  appc::image::Image image{filename};
 
   auto manifest_text = image.manifest();
   if (!manifest_text) {

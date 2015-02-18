@@ -35,9 +35,6 @@ namespace nosecone {
 namespace command {
 
 
-using namespace appc::discovery;
-
-
 int perform_fetch(const Arguments& args) {
   if (args.ordered_args.size() < 1) {
     std::cerr << "Missing argument: <app name>" << std::endl << std::endl;
@@ -45,9 +42,9 @@ int perform_fetch(const Arguments& args) {
     return EXIT_FAILURE;
   }
 
-  const Name name{args.ordered_args[0]};
+  const appc::discovery::Name name{args.ordered_args[0]};
 
-  Labels labels = config.default_labels;
+  appc::discovery::Labels labels = config.default_labels;
 
   if (args.ordered_args.size() > 1) {
     for (auto i = args.ordered_args.begin() + 1; i != args.ordered_args.end(); i++) {

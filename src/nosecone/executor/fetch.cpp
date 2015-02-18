@@ -34,10 +34,7 @@ namespace nosecone {
 namespace executor {
 
 
-using namespace appc::discovery;
-
-
-Try<URI> fetch(const Name& name, const Labels& labels)
+Try<URI> fetch(const appc::discovery::Name& name, const appc::discovery::Labels& labels)
 {
   // FIXME
   const std::string mkdir_images = "mkdir -p -- " + config.images_path;
@@ -45,15 +42,15 @@ Try<URI> fetch(const Name& name, const Labels& labels)
 
   const std::string storage_base = "file://" + config.images_path;
 
-  const auto local_strategy = strategy::local::StrategyBuilder()
+  const auto local_strategy = appc::discovery::strategy::local::StrategyBuilder()
                                 .with_storage_base_uri(storage_base)
                                 .build();
 
-  const auto simple_strategy = strategy::simple::StrategyBuilder()
+  const auto simple_strategy = appc::discovery::strategy::simple::StrategyBuilder()
                                  .with_storage_base_uri(storage_base)
                                  .build();
 
-  auto provider = ImageProvider({
+  auto provider = appc::discovery::ImageProvider({
     from_result(local_strategy),
     from_result(simple_strategy)
   });
