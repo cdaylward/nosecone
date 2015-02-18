@@ -98,7 +98,7 @@ Json to_json(const Container& container) {
   Json json{};
   // TODO Move to container start time, not to_json time.
   using clock = std::chrono::system_clock;
-  json["created"] = std::chrono::duration_cast<std::chrono::milliseconds>(
+  json["created"] = std::chrono::duration_cast<std::chrono::seconds>(
       clock::now().time_since_epoch()).count();
   json["id"] = container.id();
   json["pid"] = container.pid();
