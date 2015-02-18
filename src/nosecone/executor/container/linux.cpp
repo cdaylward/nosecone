@@ -93,7 +93,7 @@ Status Container::Impl::create_rootfs() {
   }
 
   for (auto& image : images) {
-    auto extracted = image.image.extract_rootfs_to(rootfs_path);
+    auto extracted = image.archive.extract_rootfs_to(rootfs_path);
     if (!extracted) {
       std::string where{"Could not create root file system for container: "};
       return Error(where + extracted.message);

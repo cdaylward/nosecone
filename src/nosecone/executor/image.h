@@ -26,7 +26,7 @@ namespace executor {
 
 
 struct Image {
-  appc::image::Image image;
+  appc::image::Image archive;
   appc::schema::ImageManifest manifest;
 };
 
