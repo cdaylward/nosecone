@@ -24,6 +24,7 @@
 
 #include "nosecone/config.h"
 #include "nosecone/executor/fetch.h"
+#include "nosecone/executor/validate.h"
 #include "nosecone/help.h"
 
 
@@ -62,6 +63,55 @@ Try<URI> fetch(const appc::discovery::Name& name, const appc::discovery::Labels&
   }
 
   return image_location;
+}
+
+
+Try<Images>
+fetch_and_validate(const appc::discovery::Name& name,
+                   const appc::discovery::Labels& labels,
+                   const bool with_dependencies,
+                   Images dependencies) {
+  auto image_uri = fetch(name, labels);
+  if (!image_uri) return Failure<Images>(image_uri.failure_reason());
+
+  auto image_path = uri_file_path(from_result(image_uri));
+
+  auto valid_structure = validate_structure(image_path);
+  if (!valid_structure) return Failure<Images>(valid_structure.message);
+
+  auto valid_image_try = get_validated_image(image_path);
+  if (!valid_image_try) return Failure<Images>(valid_image_try.failure_reason());
+
+  auto valid_image = from_result(valid_image_try);
+
+  std::cerr << "Validated: " << pathname::base(image_path) << " OK" << std::endl;
+
+  dependencies.push_back(valid_image);
+
+  // TODO is depth-first ok?
+  if (with_dependencies && valid_image.manifest.dependencies) {
+    for (const auto& dependency : from_some(valid_image.manifest.dependencies)) {
+      std::cerr << "Dependency: " << valid_image.manifest.name.value << " requires ";
+      std::cerr << dependency.app_name.value << std::endl;
+      Labels dependency_labels = config.default_labels;
+      if (dependency.labels) {
+        dependency_labels = from_some(dependency.labels);
+      }
+      auto downstream_image_try = fetch_and_validate(dependency.app_name,
+                                                         labels,
+                                                         true,
+                                                         dependencies);
+      if (!downstream_image_try) {
+        return Failure<Images>(downstream_image_try.failure_reason());
+      }
+      auto downstream_images = from_result(downstream_image_try);
+      std::copy(downstream_images.begin(),
+                downstream_images.end(),
+                std::back_inserter(dependencies));
+    }
+  }
+
+  return Result(dependencies);
 }
 
 

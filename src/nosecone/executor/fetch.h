@@ -19,6 +19,8 @@
 
 #include "appc/discovery/types.h"
 
+#include "nosecone/executor/image.h"
+
 
 namespace nosecone {
 namespace executor {
@@ -28,6 +30,12 @@ using namespace appc::discovery;
 
 
 Try<URI> fetch(const Name& name, const Labels& labels);
+
+
+Try<Images> fetch_and_validate(const appc::discovery::Name& name,
+                               const appc::discovery::Labels& labels,
+                               const bool with_dependencies = false,
+                               Images dependencies = Images{});
 
 
 } // namespace executor
