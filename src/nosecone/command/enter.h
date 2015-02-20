@@ -29,8 +29,8 @@ int perform_enter(const Arguments& args);
 
 const Command enter{
   "enter",
-  "Enter a running container.",
-  "Usage: enter <container ID>",
+  "Enter a running app container.",
+  "Usage: nscn enter <app container ID>",
   perform_enter
 };
 
