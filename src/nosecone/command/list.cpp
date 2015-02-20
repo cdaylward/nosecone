@@ -63,7 +63,11 @@ int perform_list(const Arguments& args) {
     const auto status = executor::container_status(filename);
 
     std::cout << std::left;
-    std::cout << std::setw(39) << filename;
+    if (status) {
+      std::cout << std::setw(39) << from_result(status).id;
+    } else {
+      std::cout << std::setw(39) << filename;
+    }
 
     std::cout << std::setw(24);
     if (status) {
@@ -71,8 +75,7 @@ int perform_list(const Arguments& args) {
       char time[100];
       strftime(time, 99, "%Y-%m-%dT%H:%M:%S.0Z", gmtime(&created_time));
       std::cout << time;
-    }
-    else {
+    } else {
       std::cout << "N/A";
     }
 
