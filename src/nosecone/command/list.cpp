@@ -33,6 +33,7 @@
 
 #include "nosecone/config.h"
 #include "nosecone/command/list.h"
+#include "nosecone/executor/status.h"
 
 
 extern nosecone::Config config;
@@ -40,47 +41,6 @@ extern nosecone::Config config;
 
 namespace nosecone {
 namespace command {
-
-
-using Json = nlohmann::json;
-
-struct ContainerStatus {
-  const std::string id;
-  const time_t created_time;
-  const bool has_pty;
-  const pid_t pid;
-  const bool running;
-};
-
-static Json container_info(const std::string& container_root) {
-  const auto info_file = pathname::join(container_root, "info");
-  Json json{};
-  std::ifstream info(info_file);
-  if (info) {
-    info >> json;
-    info.close();
-  }
-  return json;
-}
-
-static Try<ContainerStatus> container_status(const Json& info) {
-  if (info.find("id") == info.end() ||
-      info.find("created") == info.end() ||
-      info.find("has_pty") == info.end() ||
-      info.find("pid") == info.end()) {
-    return Failure<ContainerStatus>("Container info JSON missing fields.");
-  }
-  const std::string id = info["id"];
-  const time_t created_time = info["created"];
-  const bool has_pty = info["has_pty"];
-  pid_t pid = info["pid"];
-  struct stat proc_stat;
-  const auto cmdline_filename = pathname::join("/proc", std::to_string(pid), "cmdline");
-  // TODO Need another key besides PID existence to limit collisions.
-  const bool running = stat(cmdline_filename.c_str(), &proc_stat) == 0;
-
-  return Result(ContainerStatus{id, created_time, has_pty, pid, running});
-}
 
 
 int perform_list(const Arguments& args) {
@@ -99,9 +59,8 @@ int perform_list(const Arguments& args) {
   for (auto entry = readdir(dir); entry != NULL; entry = readdir(dir)) {
     const std::string filename{entry->d_name};
     if (filename == "." || filename == "..") continue;
-    const std::string full_path = pathname::join(config.containers_path, filename);
-    const auto info = container_info(full_path);
-    const auto status = container_status(info);
+    // Here, filename is container ID.
+    const auto status = executor::container_status(filename);
 
     std::cout << std::left;
     std::cout << std::setw(39) << filename;

@@ -17,9 +17,29 @@
 
 #pragma once
 
+#include "3rdparty/nlohmann/json.h"
+
 
 namespace nosecone {
 namespace executor {
+
+
+using Json = nlohmann::json;
+
+
+struct ContainerStatus {
+  const std::string id;
+  const time_t created_time;
+  const bool has_pty;
+  const pid_t pid;
+  const bool running;
+};
+
+
+Try<Json> container_info(const std::string& container_root);
+
+
+Try<ContainerStatus> container_status(const std::string& dir);
 
 
 } // namespace executor
