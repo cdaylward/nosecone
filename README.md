@@ -19,10 +19,10 @@ Requires functional std::regex (If using gcc, >= 4.9)
 ## Example (run)
 
 `nscn run` is not complete, however it will perform simple discovery, cache images
-locally, validate the them, create a rootfs, and execute the app inside a new container.
+locally, validate the them, create a rootfs, and execute the app inside a new app container.
 
 nosecone.net/example/test is an existing example app, the following example should work (-stdout
-reads the container's pty and writes to stdout):
+reads the app container's pty and writes to stdout):
 
 ```
 $ sudo ./bin/nscn run -stdout nosecone.net/example/test
@@ -81,12 +81,12 @@ d7ed46a5-ed02-45e0-92bf-634793a3949c   2015-02-20T08:48:36.0Z    20101    true R
 Very early, experimental development. Based on appc specification ~ 0.2.0 (this will converge)
 
 Command implementation status (this means exists at all, not finished):
-- [x] enter    - Enter a running container.
+- [x] enter    - Enter a running app container.
 - [x] fetch    - Fetches an image and stores it locally.
-- [ ] gc       - Expunge spent containers.
-- [x] list     - List containers.
-- [x] run      - Execute a command in a new container.
-- [ ] status   - Display the status of a container.
+- [ ] gc       - Expunge spent app containers.
+- [x] list     - List app containers.
+- [x] run      - Fetch and execute an app container.
+- [ ] status   - Display the status of an app container.
 - [x] validate - Validate an app container image.
 
 Executor implementation status (list not complete):
@@ -96,7 +96,7 @@ Executor implementation status (list not complete):
     - [ ] Fetch image using meta discovery on fall-back.
     - [x] Cache image locally.
     - [x] Inspect image for dependencies and fetch them.
-    - [x] Overlay images' rootfs onto container root file system.
+    - [x] Overlay images' rootfs onto app container root file system.
     - [x] Create pseudo-terminal.
     - [x] Create new mount, IPC, PID, and UTS namespace.
     - [ ] Create new network namespace.
