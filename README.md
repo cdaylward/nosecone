@@ -68,11 +68,12 @@ USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 
 
 $ ./bin/nscn list
-Container ID
-c0bd7e2c-b64b-4212-966d-9044b2a52f2b
-41472f9b-f669-4b91-875f-3fde7bdf21ee
-8ecd98b1-6da8-46c4-b433-93bae3893ec4
-08f2d475-cf46-4398-a820-ddcd9e59ba0e
+Container ID                           Created Date            PID     Has PTY Status
+02bf6bf2-a624-43ec-b30a-1f41f4c8ead3   2015-02-20T06:58:07.0Z    18036    true EXITED
+40c1c0ea-9c71-43fd-bb29-2f3304c8a18e   2015-02-20T08:09:18.0Z    19097    true RUNNING
+d7ed46a5-ed02-45e0-92bf-634793a3949c   2015-02-20T08:48:36.0Z    20101    true RUNNING
+58e4ae04-073b-4b8b-95fe-08ac1b19f10b   2015-02-20T08:35:09.0Z    19738    true RUNNING
+
 ```
 
 ## Status
@@ -80,7 +81,7 @@ c0bd7e2c-b64b-4212-966d-9044b2a52f2b
 Very early, experimental development. Based on appc specification ~ 0.2.0 (this will converge)
 
 Command implementation status (this means exists at all, not finished):
-- [ ] enter    - Enter a running container.
+- [x] enter    - Enter a running container.
 - [x] fetch    - Fetches an image and stores it locally.
 - [ ] gc       - Expunge spent containers.
 - [x] list     - List containers.
