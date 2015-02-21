@@ -58,7 +58,8 @@ Try<URI> fetch(const appc::discovery::Name& name, const appc::discovery::Labels&
   const auto image_location = provider.get(name, labels);
 
   if (!image_location) {
-    std::cerr << "Failed to retrieve image for " << name << std::endl;
+    return Failure<URI>(std::string{"Failed to retrieve image for "} + name + ": " +
+        image_location.failure_reason());
   }
 
   return image_location;
@@ -97,9 +98,9 @@ fetch_and_validate(const appc::discovery::Name& name,
         dependency_labels = from_some(dependency.labels);
       }
       auto downstream_image_try = fetch_and_validate(dependency.app_name,
-                                                         labels,
-                                                         true,
-                                                         dependencies);
+                                                     dependency_labels,
+                                                     true,
+                                                     dependencies);
       if (!downstream_image_try) {
         return Failure<Images>(downstream_image_try.failure_reason());
       }

@@ -58,7 +58,11 @@ int perform_fetch(const Arguments& args) {
     }
   }
 
-  executor::fetch(name, labels);
+  const auto fetched = executor::fetch(name, labels);
+  if (!fetched) {
+    std::cerr << fetched.failure_reason() << std::endl;
+    return EXIT_FAILURE;
+  }
 
   return EXIT_SUCCESS;
 }

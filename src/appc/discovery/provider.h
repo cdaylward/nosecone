@@ -46,14 +46,14 @@ public:
         std::cerr << uri.failure_reason() << std::endl;
         continue;
       }
+      std::cerr << "Resolved: " << name << " -> " << from_result(uri) << std::endl;
       // TODO logging, ;)
       auto fetched = strategy.get_fetcher()->fetch(from_result(uri));
       if (!fetched) {
-        //std::cerr << "Fetch failed: " << fetched.failure_reason() << std::endl;
+        std::cerr << "Fetch failed: " << fetched.failure_reason() << std::endl;
         continue;
       }
-      std::cerr << "Resolved: " << name << " -> " << from_result(uri) << std::endl;
-      //std::cerr << "Fetched: " << from_result(uri) << std::endl;
+      std::cerr << "Fetched: " << from_result(uri) << std::endl;
       std::cerr << "Using: " << from_result(fetched) << std::endl;
       return fetched;
     }
