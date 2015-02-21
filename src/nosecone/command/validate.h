@@ -29,7 +29,7 @@ int perform_validate(const Arguments& args);
 
 const Command validate{
   "validate",
-  "Validate an App Container Image.",
+  "Validate an app container image.",
   "Usage: nscn validate <path to image>",
   perform_validate
 };

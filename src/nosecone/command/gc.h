@@ -19,6 +19,7 @@
 
 #include "nosecone/command.h"
 
+
 namespace nosecone {
 namespace command {
 
@@ -28,8 +29,8 @@ int perform_gc(const Arguments& args);
 
 const Command gc{
   "gc",
-  "Collect garbage.",
-  "Usage: gc",
+  "Expunge spent app containers.",
+  "Usage: nscn gc",
   perform_gc
 };
 

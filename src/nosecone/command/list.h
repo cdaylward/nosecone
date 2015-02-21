@@ -29,8 +29,8 @@ int perform_list(const Arguments& args);
 
 const Command list{
   "list",
-  "List containers.",
-  "Usage: list",
+  "List app containers and their status.",
+  "Usage: nscn list",
   perform_list
 };
 

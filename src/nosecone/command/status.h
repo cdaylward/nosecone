@@ -29,8 +29,8 @@ int perform_status(const Arguments& args);
 
 const Command status{
   "status",
-  "Display the status of a container.",
-  "Usage: status <container ID>",
+  "Display the status of an app container.",
+  "Usage: nscn status <container ID>",
   perform_status
 };
 
