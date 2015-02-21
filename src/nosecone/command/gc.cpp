@@ -16,17 +16,94 @@
 // https://github.com/cdaylward/nosecone
 
 #include <iostream>
+#include <ctime>
+#include <cstring>
+#include <unistd.h>
+#include <dirent.h>
+
+#include "3rdparty/cdaylward/pathname.h"
+
+#include "appc/util/try.h"
+#include "appc/util/status.h"
 
 #include "nosecone/command.h"
+#include "nosecone/config.h"
+#include "nosecone/errno.h"
+#include "nosecone/executor/status.h"
+
+
+extern nosecone::Config config;
 
 
 namespace nosecone {
 namespace command {
 
 
+
+Status gc(const std::string& path) {
+  struct stat st;
+
+  if (lstat(path.c_str(), &st) < 0) {
+    return Errno(std::string{"Couldn't stat "} + path, errno);
+  }
+
+  if (S_ISREG(st.st_mode) || S_ISLNK(st.st_mode)) {
+    if (unlink(path.c_str()) < 0) {
+      return Errno(std::string{"Could not remove "} + path, errno);
+    }
+    return Success();
+  } else if (S_ISDIR(st.st_mode)) {
+    auto dir = opendir(path.c_str());
+    if (dir == NULL) {
+      return Errno(std::string{"Could not traverse "} + path, errno);
+    }
+    for (auto entry = readdir(dir); entry != NULL; entry = readdir(dir)) {
+      const std::string filename{entry->d_name};
+      if (filename == "." || filename == "..") continue;
+      const std::string next_path{pathname::join(path, filename)};
+      auto gced = gc(next_path);
+      if (!gced) {
+        closedir(dir);
+        return gced;
+      }
+    }
+    closedir(dir);
+    if (rmdir(path.c_str()) < 0) {
+      return Errno(std::string{"Could not remove "} + path, errno);
+    }
+    return Success();
+  }
+
+  return Error(std::string{"Could not remove "} + path);
+}
+
+
 int perform_gc(const Arguments& args) {
-  std::cerr << "gc not yet implemented." << std::endl;
-  return 0;
+  auto dir = opendir(config.containers_path.c_str());
+  if (dir == NULL) {
+    std::cerr << "Could not open " << config.containers_path << ": " << strerror(errno) << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  for (auto entry = readdir(dir); entry != NULL; entry = readdir(dir)) {
+    const std::string filename{entry->d_name};
+    if (filename == "." || filename == "..") continue;
+    const auto status_try = executor::container_status(filename);
+    if (!status_try) {
+      std::cerr << filename << " does not appear to be an app container." << std::endl;
+      continue;
+    }
+    const auto status = from_result(status_try);
+    if (status.running) continue;
+    // TODO these are sprinkled around. Make function, make safe.
+    const std::string full_path{pathname::join(config.containers_path, filename)};
+    auto gced = gc(full_path);
+    if (!gced) {
+      std::cerr << gced.message << std::endl;
+    }
+  }
+
+  return EXIT_SUCCESS;
 }
 
 
