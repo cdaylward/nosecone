@@ -25,10 +25,11 @@ Arguments separate_flags(const std::vector<std::string>& args) {
   Arguments sep{};
   bool flags_finished = false;
   for (const auto& arg : args) {
-    if (!flags_finished && arg.find("-") == 0) {
+    if (!flags_finished && arg == "--") {
+      flags_finished = true;
+    } else if (!flags_finished && arg.find("-") == 0) {
       sep.flags.push_back(arg.substr(1));
-    }
-    else {
+    } else {
       flags_finished = true;
       sep.ordered_args.push_back(arg);
     }
