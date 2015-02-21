@@ -34,7 +34,9 @@
 #include "appc/image/image.h"
 #include "appc/os/mkdir.h"
 #include "appc/util/status.h"
+#include "appc/util/option.h"
 
+#include "nosecone/errno.h"
 #include "nosecone/executor/container/linux.h"
 
 #ifdef __linux__
@@ -44,11 +46,6 @@ namespace nosecone {
 namespace executor {
 namespace container {
 namespace linux {
-
-
-inline Status Errno(const std::string& where, int err) {
-  return Error(where + strerror(err));
-}
 
 
 inline char** c_env_array(const std::map<std::string, std::string>& environment) {
@@ -328,13 +325,65 @@ Status Container::Impl::start() {
       environment[pair.name] = pair.value;
     }
   }
-
   char** environment_array = c_env_array(environment);
-  char** exec_arguments_array = c_array(app.exec);
 
+  // Enmapen schema array types.
+  char** pre_start_arguments_array = NULL;
+  if (app.event_handlers) {
+    const auto handlers = from_some(app.event_handlers);
+    for (const auto& handler : handlers) {
+      if (handler.name.value == "pre-start") {
+        pre_start_arguments_array = c_array(handler.exec);
+        break;
+      }
+    }
+  }
+  if (pre_start_arguments_array) {
+    auto prestart_pid = fork();
+    if (prestart_pid) {
+      waitpid(prestart_pid, NULL, 0);
+    } else {
+      if (execvpe(pre_start_arguments_array[0],
+                  pre_start_arguments_array,
+                  environment_array) == -1) {
+        return Errno("execvpe failed: ", errno);
+      }
+    }
+  }
+
+  char** exec_arguments_array = c_array(app.exec);
   // REM free allocated arrays if exec isn't called.
-  if (execvpe(exec_arguments_array[0], exec_arguments_array, environment_array) == -1) {
-    return Errno("execvpe failed: ", errno);
+  // REM update container PID code
+  auto app_pid = fork();
+  if (app_pid) {
+    waitpid(app_pid, NULL, 0);
+  } else {
+    if (execvpe(exec_arguments_array[0], exec_arguments_array, environment_array) == -1) {
+      return Errno("execvpe failed: ", errno);
+    }
+  }
+
+  char** post_stop_arguments_array = NULL;
+  if (app.event_handlers) {
+    const auto handlers = from_some(app.event_handlers);
+    for (const auto& handler : handlers) {
+      if (handler.name.value == "post-stop") {
+        post_stop_arguments_array = c_array(handler.exec);
+        break;
+      }
+    }
+  }
+  if (post_stop_arguments_array) {
+    auto poststart_pid = fork();
+    if (poststart_pid) {
+      waitpid(poststart_pid, NULL, 0);
+    } else {
+      if (execvpe(post_stop_arguments_array[0],
+                  post_stop_arguments_array,
+                  environment_array) == -1) {
+        return Errno("execvpe failed: ", errno);
+      }
+    }
   }
 
   return Success("child");
