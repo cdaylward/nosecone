@@ -128,7 +128,7 @@ Status await(const Container& container) {
     return Error("Cannot call wait from within container.");
   }
   if (waitpid(pid, NULL, __WALL) == -1) {
-    return Errno("Could not wait on container: ", errno);
+    return Errno("Could not wait on container", errno);
   }
 
   return Success();
@@ -143,21 +143,21 @@ bool parent_of(const Container& container) {
 Status Container::Impl::create_pty() {
   pty_master_fd = posix_openpt(O_RDWR|O_NOCTTY|O_CLOEXEC);
   if (pty_master_fd < 0) {
-    Errno("Could not create pseudoterminal for container: ", errno);
+    Errno("Could not create pseudoterminal for container", errno);
   }
 
   char slave_buff[100];
   if (ptsname_r(pty_master_fd, slave_buff, sizeof(slave_buff) - 1 ) != 0) {
-    Errno("Failed to determine tty name: ", errno);
+    Errno("Failed to determine tty name", errno);
   }
   pty_slave_name = std::string{slave_buff};
 
   if (grantpt(pty_master_fd) != 0) {
-    Errno("Failed to change tty owner: ", errno);
+    Errno("Failed to change tty owner", errno);
   }
 
   if (unlockpt(pty_master_fd) != 0) {
-    Errno("Failed to unlock tty: ", errno);
+    Errno("Failed to unlock tty", errno);
   }
 
   pty_created = true;
@@ -181,7 +181,7 @@ Status Container::Impl::start() {
   // No signal is sent to parent.
   clone_pid = syscall(__NR_clone, clone_flags, NULL);
   if (clone_pid == -1) {
-    return Errno("Failed to clone: ", errno);
+    return Errno("Failed to clone", errno);
   }
   if (clone_pid > 0) return Success("parent");
 
@@ -192,10 +192,10 @@ Status Container::Impl::start() {
     close(STDERR_FILENO);
     auto pty_slave_fd = open(pty_slave_name.c_str(), O_RDWR);
     if (pty_slave_fd == -1) {
-      return Errno("Could not open terminal: ", errno);
+      return Errno("Could not open terminal", errno);
     }
     if (pty_slave_fd != 0) {
-      return Errno("Extraneous file handles open when creating terminal: ", errno);
+      return Errno("Extraneous file handles open when creating terminal", errno);
     }
     dup2(STDIN_FILENO, STDOUT_FILENO);
     dup2(STDIN_FILENO, STDERR_FILENO);
@@ -205,7 +205,7 @@ Status Container::Impl::start() {
   }
 
   if (setsid() == -1) {
-    return Errno("Failed to create new session: ", errno);
+    return Errno("Failed to create new session", errno);
   }
 
   // TODO test
@@ -215,43 +215,43 @@ Status Container::Impl::start() {
 
   // Remount / as slave (so we don't pollute mounts but receive host's)
   if (mount(NULL, "/", NULL, MS_SLAVE|MS_REC, NULL) != 0) {
-    return Errno("Failed to mount / as slave: ", errno);
+    return Errno("Failed to mount / as slave", errno);
   }
   if (mount(rootfs_path.c_str(), rootfs_path.c_str(), "bind", MS_BIND|MS_REC, NULL) != 0) {
-    return Errno("Failed to bind mount rootfs: ", errno);
+    return Errno("Failed to bind mount rootfs", errno);
   }
 
   auto proc_dir = pathname::join(rootfs_path, "proc");
   appc::os::mkdir(proc_dir, 0755, true);
   if (mount("proc", proc_dir.c_str(), "proc",  MS_NOSUID|MS_NOEXEC|MS_NODEV, NULL) != 0) {
-    return Errno("Failed to mount /proc: ", errno);
+    return Errno("Failed to mount /proc", errno);
   }
 
   auto proc_sys_dir = pathname::join(rootfs_path, "proc", "sys");
   appc::os::mkdir(proc_sys_dir, 0755, true);
   if (mount("/proc/sys", proc_sys_dir.c_str(), NULL, MS_BIND, NULL)) {
-    return Errno("Failed to bind mount /proc/sys: ", errno);
+    return Errno("Failed to bind mount /proc/sys", errno);
   }
   if (mount(NULL, proc_sys_dir.c_str(), NULL, MS_BIND|MS_RDONLY|MS_REMOUNT, NULL)) {
-    return Errno("Failed to remount /proc/sys read-only: ", errno);
+    return Errno("Failed to remount /proc/sys read-only", errno);
   }
 
   auto sys_dir = pathname::join(rootfs_path, "sys");
   appc::os::mkdir(sys_dir, 0755, true);
   if (mount("sysfs", sys_dir.c_str(), "sysfs", MS_RDONLY|MS_NOSUID|MS_NOEXEC|MS_NODEV, NULL)) {
-    return Errno("Failed to mount sysfs /sys: ", errno);
+    return Errno("Failed to mount sysfs /sys", errno);
   }
 
   auto dev_dir = pathname::join(rootfs_path, "dev");
   appc::os::mkdir(dev_dir, 0755, true);
   if (mount("tmpfs", dev_dir.c_str(), "tmpfs", MS_NOSUID|MS_STRICTATIME, "mode=755")) {
-    return Errno("Failed to mount tmpfs /dev: ", errno);
+    return Errno("Failed to mount tmpfs /dev", errno);
   }
 
   auto pts_dir = pathname::join(rootfs_path, "dev", "pts");
   appc::os::mkdir(pts_dir, 0755, true);
   if (mount("devpts", pts_dir.c_str(), "devpts", MS_NOSUID|MS_NOEXEC, NULL)) {
-    return Errno("Failed to mount devpts /dev/pts: ", errno);
+    return Errno("Failed to mount devpts /dev/pts", errno);
   }
 
   auto new_stdin = pathname::join(rootfs_path, "dev", "stdin");
@@ -277,24 +277,24 @@ Status Container::Impl::start() {
   // Signal parent to enforce cgroups
 
   if (chdir(rootfs_path.c_str()) != 0) {
-    return Errno("Failed to chdir to rootfs: ", errno);
+    return Errno("Failed to chdir to rootfs", errno);
   }
 
   if (mount(rootfs_path.c_str(), "/", NULL, MS_MOVE, NULL) != 0) {
-    return Errno("Failed to move mount /: ", errno);
+    return Errno("Failed to move mount /", errno);
   }
 
   if (chroot(".") != 0) {
-    return Errno("chroot failed: ", errno);
+    return Errno("chroot failed", errno);
   }
 
   if (chdir("/") != 0) {
-    return Errno("chdir failed: ", errno);
+    return Errno("chdir failed", errno);
   }
 
   // Set up network
   if (sethostname(uuid.c_str(), uuid.length()) != 0) {
-    return Errno("Could not set hostname: ", errno);
+    return Errno("Could not set hostname", errno);
   }
   // Drop Capabilities
   // Set SE Linux context
@@ -303,11 +303,11 @@ Status Container::Impl::start() {
 
   gid_t gid = stoi(app.group.value);
   if (setgid(gid) != 0) {
-    return Errno("setgid failed: ", errno);
+    return Errno("setgid failed", errno);
   }
   uid_t uid = stoi(app.user.value);
   if (setuid(uid) != 0) {
-    return Errno("setuid failed: ", errno);
+    return Errno("setuid failed", errno);
   }
 
   std::map<std::string, std::string> environment{};
