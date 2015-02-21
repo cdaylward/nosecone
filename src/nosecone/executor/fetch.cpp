@@ -21,14 +21,12 @@
 #include "appc/discovery/strategy/local.h"
 #include "appc/discovery/strategy/meta.h"
 #include "appc/discovery/strategy/simple.h"
+#include "appc/os/mkdir.h"
 
 #include "nosecone/config.h"
 #include "nosecone/executor/fetch.h"
 #include "nosecone/executor/validate.h"
 #include "nosecone/help.h"
-
-
-extern nosecone::Config config;
 
 
 namespace nosecone {
@@ -37,9 +35,10 @@ namespace executor {
 
 Try<URI> fetch(const appc::discovery::Name& name, const appc::discovery::Labels& labels)
 {
-  // FIXME
-  const std::string mkdir_images = "mkdir -p -- " + config.images_path;
-  system(mkdir_images.c_str());
+  const auto made_image_dir = appc::os::mkdir(config.images_path, 0755, true);
+  if (!made_image_dir) {
+    return Failure<URI>(std::string{"Could not make directory for images: "} + config.images_path);
+  }
 
   const std::string storage_base = "file://" + config.images_path;
 

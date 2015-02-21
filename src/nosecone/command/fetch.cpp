@@ -28,9 +28,6 @@
 #include "nosecone/executor/fetch.h"
 
 
-extern nosecone::Config config;
-
-
 namespace nosecone {
 namespace command {
 

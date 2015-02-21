@@ -32,12 +32,8 @@
 #include "nosecone/executor/status.h"
 
 
-extern nosecone::Config config;
-
-
 namespace nosecone {
 namespace command {
-
 
 
 Status gc(const std::string& path) {

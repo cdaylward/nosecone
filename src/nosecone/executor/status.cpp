@@ -22,9 +22,6 @@
 #include "nosecone/executor/status.h"
 
 
-extern nosecone::Config config;
-
-
 namespace nosecone {
 namespace executor {
 
@@ -44,6 +41,7 @@ Try<Json> container_info(const std::string& container_root) {
 
 
 Try<ContainerStatus> container_status(const std::string& dir) {
+  // TODO executor should not bring in globals from CLI
   const std::string full_path = pathname::join(config.containers_path, dir);
   const auto info_try = container_info(full_path);
   if (!info_try) return Failure<ContainerStatus>(info_try.failure_reason());

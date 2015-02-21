@@ -37,9 +37,6 @@
 #include "appc/discovery/types.h"
 
 
-extern nosecone::Config config;
-
-
 namespace nosecone {
 namespace command {
 

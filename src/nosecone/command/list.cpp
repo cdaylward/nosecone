@@ -36,9 +36,6 @@
 #include "nosecone/executor/status.h"
 
 
-extern nosecone::Config config;
-
-
 namespace nosecone {
 namespace command {
 

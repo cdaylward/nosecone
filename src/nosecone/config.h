@@ -17,3 +17,6 @@ struct Config {
 
 
 } // namespace nosecone
+
+
+extern nosecone::Config config;
