@@ -2,11 +2,8 @@
 
 ## Overview
 
-Nose Cone is a C++ [Rocket](https://github.com/coreos/rocket) clone that uses the
-[libappc](https://github.com/cdaylward/libappc) App Container library.
-
-Nose Cone's interface will differ somewhat from that of Rocket's, however it should
-feel similar.
+Nose Cone is a C++ [App Container](https://github.com/appc/spec) implementation that
+uses the [libappc](https://github.com/cdaylward/libappc) App Container library.
 
 ## Getting Started
 
@@ -80,20 +77,21 @@ d7ed46a5-ed02-45e0-92bf-634793a3949c   2015-02-20T08:48:36.0Z    20101    true R
 
 Very early, experimental development. Based on appc specification ~ 0.2.0 (this will converge)
 
-Command implementation status (this means exists at all, not finished):
-- [x] enter    - Enter a running app container.
-- [x] fetch    - Fetches an image and stores it locally.
-- [ ] gc       - Expunge spent app containers.
-- [x] list     - List app containers.
-- [x] run      - Fetch and execute an app container.
-- [x] status   - Display the status of an app container.
-- [x] validate - Validate an app container image.
+Commands implemented (this means exists at all, not finished):
+- enter    - Enter a running app container.
+- fetch    - Fetches an image and stores it locally.
+- gc       - Expunge spent app containers.
+- list     - List app containers.
+- run      - Fetch and execute an app container.
+- status   - Display the status of an app container.
+- validate - Validate an app container image.
 
 Executor implementation status (list not complete):
 
 - [ ] run
     - [x] Fetch image using simple discovery.
     - [ ] Fetch image using meta discovery on fall-back.
+    - [ ] Verify signature of images.
     - [x] Cache image locally.
     - [x] Inspect image for dependencies and fetch them.
     - [x] Overlay images' rootfs onto app container root file system.
@@ -122,6 +120,7 @@ Executor implementation status (list not complete):
     - [ ] Execute pre-start hook.
     - [x] Execute app.
     - [ ] Execute post-stop hook.
+- [ ] meta-data service
 
 ## License
 
