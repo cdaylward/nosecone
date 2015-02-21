@@ -86,7 +86,7 @@ Command implementation status (this means exists at all, not finished):
 - [ ] gc       - Expunge spent app containers.
 - [x] list     - List app containers.
 - [x] run      - Fetch and execute an app container.
-- [ ] status   - Display the status of an app container.
+- [x] status   - Display the status of an app container.
 - [x] validate - Validate an app container image.
 
 Executor implementation status (list not complete):
