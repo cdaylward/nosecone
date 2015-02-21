@@ -327,7 +327,10 @@ Status Container::Impl::start() {
   }
   char** environment_array = c_env_array(environment);
 
-  // Enmapen schema array types.
+  // TODO clean ALL of this up!
+  // Enmapen schema map types.
+  // REM free allocated arrays if exec isn't called.
+  // REM update container PID code?
   char** pre_start_arguments_array = NULL;
   if (app.event_handlers) {
     const auto handlers = from_some(app.event_handlers);
@@ -341,6 +344,7 @@ Status Container::Impl::start() {
   if (pre_start_arguments_array) {
     auto prestart_pid = fork();
     if (prestart_pid) {
+      // TODO these need to check status
       waitpid(prestart_pid, NULL, 0);
     } else {
       if (execvpe(pre_start_arguments_array[0],
@@ -352,8 +356,6 @@ Status Container::Impl::start() {
   }
 
   char** exec_arguments_array = c_array(app.exec);
-  // REM free allocated arrays if exec isn't called.
-  // REM update container PID code
   auto app_pid = fork();
   if (app_pid) {
     waitpid(app_pid, NULL, 0);
