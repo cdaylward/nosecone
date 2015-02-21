@@ -30,7 +30,9 @@ int perform_enter(const Arguments& args);
 const Command enter{
   "enter",
   "Enter a running app container.",
-  "Usage: nscn enter <app container ID>",
+  "Usage: nscn enter [flags] <app container ID>\n\n"
+  "Flags:\n"
+  "  -admin - Enter the app container as root, not as app user.",
   perform_enter
 };
 

@@ -64,11 +64,16 @@ int perform_enter(const Arguments& args) {
 
   // TODO add user and network namespaces
 
-  //const auto user_fd = open(pathname::join("/proc", pid, "ns", "user").c_str(), O_RDONLY);
-  //if (setns(user_fd, CLONE_NEWUSER) != 0) {
-  //  std::cerr << "Could not associate with user namespace: " << strerror(errno) << std::endl;
-  //  return EXIT_FAILURE;
-  //}
+  // TODO fixup.
+  const auto user_fd = open(pathname::join("/proc", pid, "ns", "user").c_str(), O_RDONLY);
+  if (user_fd < 0) {
+    std::cerr << "Could not associate with user namespace: " << strerror(errno) << std::endl;
+  } else {
+    if (setns(user_fd, CLONE_NEWUSER) != 0) {
+      std::cerr << "Could not associate with user namespace: " << strerror(errno) << std::endl;
+    }
+    close(user_fd);
+  }
 
   const auto ipc_fd = open(pathname::join("/proc", pid, "ns", "ipc").c_str(), O_RDONLY);
   if (ipc_fd < 0 || setns(ipc_fd, CLONE_NEWIPC) != 0) {
@@ -85,7 +90,7 @@ int perform_enter(const Arguments& args) {
   close(uts_fd);
 
   //const auto net_fd = open(pathname::join("/proc", pid, "ns", "net").c_str(), O_RDONLY);
-  //if (setns(net_fd, CLONE_NEWNS) != 0) {
+  //if (setns(net_fd, CLONE_NEWNET) != 0) {
   //  std::cerr << "Could not associate with network namespace: " << strerror(errno) << std::endl;
   //  return EXIT_FAILURE;
   //}
@@ -105,7 +110,11 @@ int perform_enter(const Arguments& args) {
   close(mnt_fd);
 
   pid_t child_pid = fork();
-  // Set uid, gid? Leave as root with --admin?
+
+  if (!args.has_flag("admin")) {
+    // TODO, needs manifest
+    // Set uid, gid.
+  }
 
   // FIXME
   if (child_pid) {
