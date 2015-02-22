@@ -116,7 +116,7 @@ int perform_enter(const Arguments& args) {
     // Set uid, gid.
   }
 
-  // FIXME
+  // FIXME check status
   if (child_pid) {
     waitpid(child_pid, NULL, __WALL);
     return EXIT_SUCCESS;
