@@ -36,7 +36,7 @@ namespace nosecone {
 namespace command {
 
 
-Status gc(const std::string& path) {
+Status recursive_remove_dir(const std::string& path) {
   struct stat st;
 
   if (lstat(path.c_str(), &st) < 0) {
@@ -57,10 +57,10 @@ Status gc(const std::string& path) {
       const std::string filename{entry->d_name};
       if (filename == "." || filename == "..") continue;
       const std::string next_path{pathname::join(path, filename)};
-      auto gced = gc(next_path);
-      if (!gced) {
+      auto rmd = recursive_remove_dir(next_path);
+      if (!rmd) {
         closedir(dir);
-        return gced;
+        return rmd;
       }
     }
     closedir(dir);
@@ -93,10 +93,11 @@ int perform_gc(const Arguments& args) {
     if (status.running) continue;
     // TODO these are sprinkled around. Make function, make safe.
     const std::string full_path{pathname::join(config.containers_path, filename)};
-    auto gced = gc(full_path);
+    auto gced = recursive_remove_dir(full_path);
     if (!gced) {
       std::cerr << gced.message << std::endl;
     }
+    std::cout << filename << " expunged." << std::endl;
   }
 
   return EXIT_SUCCESS;
