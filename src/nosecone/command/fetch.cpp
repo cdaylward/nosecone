@@ -58,7 +58,9 @@ int perform_fetch(const Arguments& args) {
     }
   }
 
-  const auto fetched = executor::fetch(name, labels);
+  const bool with_dependencies = !args.has_flag("nodeps");
+
+  const auto fetched = executor::fetch_and_validate(name, labels, with_dependencies);
   if (!fetched) {
     std::cerr << fetched.failure_reason() << std::endl;
     return EXIT_FAILURE;
