@@ -29,7 +29,7 @@ int perform_run(const Arguments& args);
 
 const Command run{
   "run",
-  "Execute an app container.",
+  "Execute an app container. Fetches images as required.",
   "Usage: run [flags] <app name> [<label name>:<label value> ...]\n\n"
   "Flags:\n"
   "  -wait   - Wait for the container to terminate.\n"
