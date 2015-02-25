@@ -26,9 +26,6 @@ namespace nosecone {
 namespace executor {
 
 
-using namespace appc;
-
-
 Status validate(const std::string& filename);
 Status validate_structure(const std::string& filename);
 Try<Image> get_validated_image(const std::string& filename);

@@ -75,7 +75,7 @@ Try<Image> get_validated_image(const std::string& filename) {
     return Failure<Image>(std::string{"Manifest is invalid JSON: "} + err.what());
   }
 
-  auto manifest = schema::ImageManifest::from_json(manifest_json);
+  auto manifest = appc::schema::ImageManifest::from_json(manifest_json);
   if (!manifest) {
     return Failure<Image>(
         std::string{"Could not parse: "} + manifest.failure_reason());

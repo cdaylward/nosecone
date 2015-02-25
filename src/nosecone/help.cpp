@@ -15,7 +15,6 @@
 // A (possibly updated) copy of of this software is available at
 // https://github.com/cdaylward/nosecone
 
-
 #include <iostream>
 #include <iomanip>
 #include <string>
