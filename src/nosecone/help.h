@@ -21,9 +21,7 @@
 
 #include "nosecone/command.h"
 
-using namespace nosecone;
 
-
-void print_usage(const std::map<std::string, Command>& commands);
-void print_help(const Command& command);
+void print_usage(const std::map<std::string, nosecone::Command>& commands);
+void print_help(const nosecone::Command& command);
 void unknown_command(const std::string& command);
