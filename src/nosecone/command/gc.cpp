@@ -36,7 +36,7 @@ namespace nosecone {
 namespace command {
 
 
-Status recursive_remove_dir(const std::string& path) {
+static Status recursive_remove_dir(const std::string& path) {
   struct stat st;
 
   if (lstat(path.c_str(), &st) < 0) {
