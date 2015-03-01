@@ -17,6 +17,8 @@
 
 #include <fstream>
 
+#include <sys/stat.h>
+
 #include "3rdparty/cdaylward/pathname.h"
 #include "nosecone/config.h"
 #include "nosecone/executor/status.h"
