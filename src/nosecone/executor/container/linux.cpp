@@ -22,6 +22,7 @@
 
 #include <dirent.h>
 #include <fcntl.h>
+#include <pwd.h>
 #include <sched.h>
 #include <sys/mount.h>
 #include <sys/syscall.h>
@@ -49,7 +50,7 @@ namespace linux {
 
 inline char** c_env_array(const std::map<std::string, std::string>& environment) {
   const size_t env_size = environment.size() + 1;
-  char** environment_array = static_cast<char**>(calloc(env_size, sizeof(char*)));
+  char** environment_array = new char*[env_size];
   off_t i = 0;
   for (const auto& pair : environment) {
     const auto assignment = pair.first + "=" + pair.second;
@@ -62,7 +63,7 @@ inline char** c_env_array(const std::map<std::string, std::string>& environment)
 
 inline char** c_array(const std::vector<std::string>& strings) {
   const size_t array_size = strings.size() + 1;
-  char** array = static_cast<char**>(calloc(array_size, sizeof(char*)));
+  char** array = new char*[array_size];
   off_t i = 0;
   for (const auto& str : strings) {
     array[i++] = strdup(const_cast<char*>(str.c_str()));
@@ -300,21 +301,49 @@ Status Container::Impl::start() {
 
   umask(0022);
 
-  gid_t gid = app.group.value;
-  if (setgid(gid) != 0) {
+  // TODO
+  if (setgid(stoi(app.group.value)) != 0) {
     return Errno("setgid failed", errno);
   }
-  uid_t uid = app.user.value;
-  if (setuid(uid) != 0) {
-    return Errno("setuid failed", errno);
+
+  // TODO relocate
+  struct passwd passwd_entry;
+  struct passwd* passwd_entry_ptr;
+  const size_t pw_r_size = sysconf(_SC_GETPW_R_SIZE_MAX);
+  char passwd_entry_buff[pw_r_size];
+  auto uid_int = TryFrom<int>([&]() {
+      return std::stoi(app.user.value);
+  });
+  if (uid_int) {
+    if (setuid(from_result(uid_int)) != 0) {
+      return Errno("setuid failed", errno);
+    }
+    passwd_entry_ptr = getpwent();
+  } else {
+    int pw_ret = getpwnam_r(app.user.value.c_str(), &passwd_entry,
+                            passwd_entry_buff, sizeof(passwd_entry_buff), &passwd_entry_ptr);
+    if (pw_ret != 0) {
+      return Errno("Could not lookup user", pw_ret);
+    }
+    if (passwd_entry_ptr == NULL) {
+      return Error("User not found.");
+    }
   }
 
   std::map<std::string, std::string> environment{};
-  environment["HOME"] = "/"; // TODO
-  environment["LOGNAME"] = app.user.value; // TODO
+  if (passwd_entry_ptr != NULL) {
+    environment["LOGNAME"] = passwd_entry_ptr->pw_name;
+    environment["USER"] = passwd_entry_ptr->pw_name;
+    environment["HOME"] = passwd_entry_ptr->pw_dir;
+    environment["SHELL"] = passwd_entry_ptr->pw_shell;
+  } else {
+    // TODO
+    environment["LOGNAME"] = app.user.value;
+    environment["USER"] = app.user.value;
+    environment["HOME"] = "/tmp";
+    environment["SHELL"] = "/bin/sh";
+  }
   environment["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
-  environment["SHELL"] = "/bin/bash"; // TODO
-  environment["USER"] = app.user.value;
   char* term_type = getenv("TERM");
   if (term_type != NULL) {
     environment["TERM"] = term_type;
