@@ -61,7 +61,7 @@ static Json to_json(const Container& container) {
 static void dump_container_stdout(const Container& container) {
   const int pty_master_fd = container.pty_fd();
   char pty_buffer[4096];
-  for (int rc = 0;
+  for (ssize_t rc = 0;
        rc != -1;
        rc = read(pty_master_fd, pty_buffer, sizeof(pty_buffer) - 1)) {
     if (rc > 0) {
