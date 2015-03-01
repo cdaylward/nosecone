@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 #include "appc/schema/common.h"
 
 
@@ -24,12 +26,14 @@ namespace appc {
 namespace schema {
 
 
-struct User : StringType<User> {
-  explicit User(const std::string& uid)
-  : StringType<User>(uid) {}
+struct User : IntegerType<User> {
+  explicit User(const int64_t& uid)
+  : IntegerType<User>(uid) {}
 
-  Status validate() const {
-    //TODO(cdaylward)
+  virtual Status validate() const {
+    if (INT32_MIN > value || value > INT32_MAX) {
+      return Invalid("User must be 32 bit integer.");
+    }
     return Valid();
   }
 };

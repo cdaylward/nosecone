@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 // A (possibly updated) copy of of this software is available at
-// https://github.com/cdaylward/nosecone
+// https://github.com/cdaylward/libappc
 
 #pragma once
 

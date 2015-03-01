@@ -18,18 +18,21 @@
 #include <iostream>
 #include <ctime>
 #include <cstring>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
 
 #include "3rdparty/cdaylward/pathname.h"
 
+#include "appc/os/errno.h"
 #include "appc/util/try.h"
 #include "appc/util/status.h"
 
 #include "nosecone/command.h"
 #include "nosecone/config.h"
-#include "nosecone/errno.h"
 #include "nosecone/executor/status.h"
+
+#include "nosecone/command/gc.h"
 
 
 namespace nosecone {

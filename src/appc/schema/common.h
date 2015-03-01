@@ -92,11 +92,10 @@ struct StringType : Type<T> {
 
 template<typename T>
 struct IntegerType : Type<T> {
-  // TODO hand-wavy
   const int64_t value;
 
-  explicit IntegerType<T>(const double value)
-  : value(value) {}
+  explicit IntegerType<T>(const int64_t value)
+  : value(static_cast<int64_t>(value)) {}
 
   bool operator==(const IntegerType<T>& other) const {
     return value == other.value;
@@ -114,7 +113,7 @@ struct IntegerType : Type<T> {
     if (json.type() != Json::value_t::number) {
       return Failure<T>("IntegerType must be intialized from JSON number type.");
     }
-    return Result(T(json.get<int>()));
+    return Result(T(json));
   }
 
   static Json to_json(const T& int_type) {
@@ -127,7 +126,7 @@ template<typename T>
 struct BooleanType : Type<T> {
   const bool value;
 
-  explicit BooleanType<T>(const double value)
+  explicit BooleanType<T>(const bool value)
   : value(value) {}
 
   bool operator==(const BooleanType<T>& other) const {

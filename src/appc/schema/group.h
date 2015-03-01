@@ -17,6 +17,9 @@
 
 #pragma once
 
+#include <string>
+
+#include "appc/util/try.h"
 #include "appc/schema/common.h"
 
 
@@ -24,12 +27,14 @@ namespace appc {
 namespace schema {
 
 
-struct Group : StringType<Group> {
-  explicit Group(const std::string& gid)
-  : StringType<Group>(gid) {}
+struct Group : IntegerType<Group> {
+  explicit Group(const int64_t& gid)
+  : IntegerType<Group>(gid) {}
 
-  Status validate() const {
-    //TODO(cdaylward)
+  virtual Status validate() const {
+    if (value < INT32_MIN || value > INT32_MAX) {
+      return Invalid("Group must be 32 bit integer.");
+    }
     return Valid();
   }
 };

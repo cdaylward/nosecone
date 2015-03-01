@@ -27,16 +27,15 @@
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-// TODO decide on term attrs
 #include <termios.h>
 #include <unistd.h>
 
 #include "appc/image/image.h"
+#include "appc/os/errno.h"
 #include "appc/os/mkdir.h"
-#include "appc/util/status.h"
 #include "appc/util/option.h"
+#include "appc/util/status.h"
 
-#include "nosecone/errno.h"
 #include "nosecone/executor/container/linux.h"
 
 #ifdef __linux__
@@ -301,11 +300,11 @@ Status Container::Impl::start() {
 
   umask(0022);
 
-  gid_t gid = stoi(app.group.value);
+  gid_t gid = app.group.value;
   if (setgid(gid) != 0) {
     return Errno("setgid failed", errno);
   }
-  uid_t uid = stoi(app.user.value);
+  uid_t uid = app.user.value;
   if (setuid(uid) != 0) {
     return Errno("setuid failed", errno);
   }
