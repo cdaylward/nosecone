@@ -98,8 +98,8 @@ int perform_run(const Arguments& args) {
     }
   }
 
-  const bool wait_for_container = args.has_flag("wait") ? true : false;
-  const bool dump_stdout = args.has_flag("stdout") ? true : false;
+  const bool wait_for_container = args.has_flag("wait");
+  const bool dump_stdout = args.has_flag("stdout");
 
   if (geteuid() != 0) {
     std::cerr << "Containers can only be started by root." << std::endl;
