@@ -81,6 +81,39 @@ inline char** c_array(const appc::schema::Exec& exec) {
   return c_array(strings);
 }
 
+struct PasswdEntry {
+  struct passwd entry;
+  char entry_buff[1024];
+};
+
+inline Try<PasswdEntry> get_passwd_entry(const appc::schema::User& user) {
+  PasswdEntry entry;
+  struct passwd* entry_ptr;
+
+  auto uid_int = TryFrom<int>([&]() {
+      return std::stoi(user.value);
+  });
+  // TODO stoi can consume partial, check.
+
+  int getpw_ret;
+  if (uid_int) {
+    getpw_ret = getpwuid_r(from_result(uid_int), &entry.entry,
+                           entry.entry_buff, sizeof(entry.entry_buff), &entry_ptr);
+  } else {
+    getpw_ret = getpwnam_r(user.value.c_str(), &entry.entry,
+                           entry.entry_buff, sizeof(entry.entry_buff), &entry_ptr);
+  }
+
+  if (getpw_ret != 0) {
+    return Failure<PasswdEntry>(Errno("Could not lookup user", getpw_ret).message);
+  }
+  if (entry_ptr == NULL) {
+    return Failure<PasswdEntry>("User not found.");
+  }
+
+  return Result(entry);
+}
+
 
 Status Container::Impl::create_rootfs() {
   const auto made_container_root = appc::os::mkdir(rootfs_path, 0755, true);
@@ -273,7 +306,6 @@ Status Container::Impl::start() {
   // bind mounts RO
   // mount tmpfs
 
-
   // Signal parent to enforce cgroups
 
   if (chdir(rootfs_path.c_str()) != 0) {
@@ -306,36 +338,29 @@ Status Container::Impl::start() {
     return Errno("setgid failed", errno);
   }
 
-  // TODO relocate
-  struct passwd passwd_entry;
-  struct passwd* passwd_entry_ptr;
-  const size_t pw_r_size = sysconf(_SC_GETPW_R_SIZE_MAX);
-  char passwd_entry_buff[pw_r_size];
-  auto uid_int = TryFrom<int>([&]() {
-      return std::stoi(app.user.value);
-  });
-  if (uid_int) {
+  const auto passwd_entry_try = get_passwd_entry(app.user);
+  if (passwd_entry_try) {
+    const auto entry = from_result(passwd_entry_try);
+    if (setuid(entry.entry.pw_uid) != 0) {
+      return Errno("setuid failed", errno);
+    }
+  } else {
+    const auto uid_int = TryFrom<int>([&]() {
+        return std::stoi(app.user.value);
+    });
     if (setuid(from_result(uid_int)) != 0) {
       return Errno("setuid failed", errno);
     }
-    passwd_entry_ptr = getpwent();
-  } else {
-    int pw_ret = getpwnam_r(app.user.value.c_str(), &passwd_entry,
-                            passwd_entry_buff, sizeof(passwd_entry_buff), &passwd_entry_ptr);
-    if (pw_ret != 0) {
-      return Errno("Could not lookup user", pw_ret);
-    }
-    if (passwd_entry_ptr == NULL) {
-      return Error("User not found.");
-    }
   }
 
+
   std::map<std::string, std::string> environment{};
-  if (passwd_entry_ptr != NULL) {
-    environment["LOGNAME"] = passwd_entry_ptr->pw_name;
-    environment["USER"] = passwd_entry_ptr->pw_name;
-    environment["HOME"] = passwd_entry_ptr->pw_dir;
-    environment["SHELL"] = passwd_entry_ptr->pw_shell;
+  if (passwd_entry_try) {
+    const auto entry = from_result(passwd_entry_try);
+    environment["LOGNAME"] = entry.entry.pw_name;
+    environment["USER"] = entry.entry.pw_name;
+    environment["HOME"] = entry.entry.pw_dir;
+    environment["SHELL"] = entry.entry.pw_shell;
   } else {
     // TODO
     environment["LOGNAME"] = app.user.value;
@@ -356,9 +381,9 @@ Status Container::Impl::start() {
   char** environment_array = c_env_array(environment);
 
   // TODO clean ALL of this up!
-  // Enmapen schema map types.
   // REM free allocated arrays if exec isn't called.
-  // REM update container PID code?
+  // REM update container PID code (fail if pre-start fails,
+  // always run post-stop, return code is that of app's, etc).
   char** pre_start_arguments_array = NULL;
   if (app.event_handlers) {
     const auto handlers = from_some(app.event_handlers);
@@ -372,7 +397,7 @@ Status Container::Impl::start() {
   if (pre_start_arguments_array) {
     auto prestart_pid = fork();
     if (prestart_pid) {
-      // TODO these need to check status
+      // TODO these need to check status, fail if child exits non-zero
       waitpid(prestart_pid, NULL, 0);
     } else {
       if (execvpe(pre_start_arguments_array[0],
