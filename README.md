@@ -16,7 +16,7 @@ Requires functional std::regex (If using gcc, >= 4.9)
 ## Example (run)
 
 `nscn run` is not complete, however it will perform simple discovery, cache images
-locally, validate the them, create a rootfs, and execute the app inside a new app container.
+locally, validate them, create a rootfs, and execute the app inside a new app container.
 
 nosecone.net/example/test is an existing example app, the following example should work (-stdout
 reads the app container's pty and writes to stdout):
