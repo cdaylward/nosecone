@@ -8,8 +8,8 @@ if (CMAKE_COMPILER_IS_GNUCXX AND
   message(FATAL_ERROR "Nose Cone requires GCC version >= ${GNUCXX_MINIMUM_VERSION}")
 endif()
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -pedantic ")
-set(CMAKE_CXX_FLAGS_DISTRIBUTION "-O3 -flto ")
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -pedantic")
+set(CMAKE_CXX_FLAGS_DISTRIBUTION "-O3")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 include_directories(src)
