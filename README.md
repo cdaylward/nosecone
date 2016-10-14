@@ -1,5 +1,7 @@
 # Nose Cone
 
+*Not actively worked on*
+
 ## Overview
 
 Nose Cone is a C++ [App Container](https://github.com/appc/spec) implementation that
